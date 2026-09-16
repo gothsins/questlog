@@ -1,0 +1,18 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: questlog-postgres
+
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-questlog}
+      POSTGRES_USER: ${POSTGRES_USER:-questlog}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-questlog}
+
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+
+    volumes:
+      - questlog_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  questlog_postgres_data:

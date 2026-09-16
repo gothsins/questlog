@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: questlog-api
+
+  datasource:
+    url: jdbc:postgresql://localhost:${POSTGRES_PORT:5432}/${POSTGRES_DB:questlog}
+    username: ${POSTGRES_USER:questlog}
+    password: ${POSTGRES_PASSWORD:questlog}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+    open-in-view: false
+
+  flyway:
+    enabled: true
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
