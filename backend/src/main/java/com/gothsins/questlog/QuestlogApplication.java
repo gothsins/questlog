@@ -1,13 +1,12 @@
-package com.gothsins.questlog_api;
+package com.gothsins.questlog;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class QuestlogApiApplication {
+public class QuestlogApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(QuestlogApiApplication.class, args);
+		SpringApplication.run(QuestlogApplication.class, args);
 	}
-
 }
