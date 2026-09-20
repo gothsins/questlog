@@ -4,6 +4,7 @@ import com.gothsins.questlog.game.Game;
 import com.gothsins.questlog.game.GameRepository;
 import com.gothsins.questlog.user.User;
 import com.gothsins.questlog.user.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -23,6 +24,7 @@ public class LibraryEntryService {
         this.gameRepository = gameRepository;
     }
 
+    @Transactional
     public LibraryEntry addGameToLibrary(Long userId, Long gameId) {
 
         User user = userRepository.findById(userId)
