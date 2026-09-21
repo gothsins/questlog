@@ -1,7 +1,10 @@
 package com.gothsins.questlog.library;
 
+import com.gothsins.questlog.exception.GameAlreadyInLibraryException;
+import com.gothsins.questlog.exception.ResourceNotFoundException;
 import com.gothsins.questlog.game.Game;
 import com.gothsins.questlog.game.GameRepository;
+import com.gothsins.questlog.library.dto.LibraryEntryResponse;
 import com.gothsins.questlog.user.User;
 import com.gothsins.questlog.user.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -43,6 +46,7 @@ class LibraryEntryServiceTest {
 
         Game game = new Game();
         game.setId(gameId);
+        game.setTitle("Hollow Knight");
 
         when(userRepository.findById(userId))
                 .thenReturn(Optional.of(user));
@@ -56,7 +60,7 @@ class LibraryEntryServiceTest {
         when(libraryEntryRepository.save(any(LibraryEntry.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        LibraryEntry result =
+        LibraryEntryResponse result =
                 libraryEntryService.addGameToLibrary(userId, gameId);
 
         assertNotNull(result);
@@ -71,6 +75,10 @@ class LibraryEntryServiceTest {
         assertEquals(user, savedEntry.getUser());
         assertEquals(game, savedEntry.getGame());
         assertEquals(GameStatus.BACKLOG, savedEntry.getStatus());
+
+        assertEquals(gameId, result.gameId());
+        assertEquals("Hollow Knight", result.title());
+        assertEquals(GameStatus.BACKLOG, result.status());
     }
 
     @Test
@@ -82,9 +90,9 @@ class LibraryEntryServiceTest {
         when(userRepository.findById(userId))
                 .thenReturn(Optional.empty());
 
-        IllegalArgumentException exception =
+        ResourceNotFoundException exception =
                 assertThrows(
-                        IllegalArgumentException.class,
+                        ResourceNotFoundException.class,
                         () -> libraryEntryService.addGameToLibrary(userId, gameId)
                 );
 
@@ -111,9 +119,9 @@ class LibraryEntryServiceTest {
         when(gameRepository.findById(gameId))
                 .thenReturn(Optional.empty());
 
-        IllegalArgumentException exception =
+        ResourceNotFoundException exception =
                 assertThrows(
-                        IllegalArgumentException.class,
+                        ResourceNotFoundException.class,
                         () -> libraryEntryService.addGameToLibrary(userId, gameId)
                 );
 
@@ -146,9 +154,9 @@ class LibraryEntryServiceTest {
         when(libraryEntryRepository.existsByUser_IdAndGame_Id(userId, gameId))
                 .thenReturn(true);
 
-        IllegalStateException exception =
+        GameAlreadyInLibraryException exception =
                 assertThrows(
-                        IllegalStateException.class,
+                        GameAlreadyInLibraryException.class,
                         () -> libraryEntryService.addGameToLibrary(userId, gameId)
                 );
 

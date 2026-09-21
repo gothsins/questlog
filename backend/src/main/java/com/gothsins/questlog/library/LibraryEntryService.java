@@ -1,7 +1,10 @@
 package com.gothsins.questlog.library;
 
+import com.gothsins.questlog.exception.GameAlreadyInLibraryException;
+import com.gothsins.questlog.exception.ResourceNotFoundException;
 import com.gothsins.questlog.game.Game;
 import com.gothsins.questlog.game.GameRepository;
+import com.gothsins.questlog.library.dto.LibraryEntryResponse;
 import com.gothsins.questlog.user.User;
 import com.gothsins.questlog.user.UserRepository;
 import jakarta.transaction.Transactional;
@@ -25,20 +28,20 @@ public class LibraryEntryService {
     }
 
     @Transactional
-    public LibraryEntry addGameToLibrary(Long userId, Long gameId) {
+    public LibraryEntryResponse addGameToLibrary(Long userId, Long gameId) {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("User not found")
+                        new ResourceNotFoundException("User not found")
                 );
 
         Game game = gameRepository.findById(gameId)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Game not found")
+                        new ResourceNotFoundException("Game not found")
                 );
 
         if (libraryEntryRepository.existsByUser_IdAndGame_Id(userId, gameId)) {
-            throw new IllegalStateException("Game already exists in user's library");
+            throw new GameAlreadyInLibraryException("Game already exists in user's library");
         }
 
         LibraryEntry entry = new LibraryEntry();
@@ -47,6 +50,24 @@ public class LibraryEntryService {
         entry.setGame(game);
         entry.setStatus(GameStatus.BACKLOG);
 
-        return libraryEntryRepository.save(entry);
+        LibraryEntry savedEntry =
+                libraryEntryRepository.save(entry);
+
+        return toResponse(savedEntry);
+    }
+
+    private LibraryEntryResponse toResponse(LibraryEntry entry) {
+
+        return new LibraryEntryResponse(
+                entry.getId(),
+                entry.getGame().getId(),
+                entry.getGame().getTitle(),
+                entry.getGame().getCoverUrl(),
+                entry.getStatus(),
+                entry.getRating(),
+                entry.getHoursPlayed(),
+                entry.getCreatedAt(),
+                entry.getUpdatedAt()
+        );
     }
 }
