@@ -14,6 +14,11 @@ public interface LibraryEntryRepository extends JpaRepository<LibraryEntry, Long
             Long gameId
     );
 
+    Optional<LibraryEntry> findByIdAndUser_Id(
+            Long id,
+            Long userId
+    );
+
     boolean existsByUser_IdAndGame_Id(
             Long userId,
             Long gameId

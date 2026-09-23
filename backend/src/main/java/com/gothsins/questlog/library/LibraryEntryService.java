@@ -5,10 +5,14 @@ import com.gothsins.questlog.exception.ResourceNotFoundException;
 import com.gothsins.questlog.game.Game;
 import com.gothsins.questlog.game.GameRepository;
 import com.gothsins.questlog.library.dto.LibraryEntryResponse;
+import com.gothsins.questlog.library.dto.UpdateLibraryEntryRequest;
 import com.gothsins.questlog.user.User;
 import com.gothsins.questlog.user.UserRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
+
+
+import java.util.List;
 
 @Service
 public class LibraryEntryService {
@@ -69,5 +73,64 @@ public class LibraryEntryService {
                 entry.getCreatedAt(),
                 entry.getUpdatedAt()
         );
+    }
+
+    @Transactional(readOnly = true)
+    public List<LibraryEntryResponse> findAllByUser(Long userId) {
+
+        return libraryEntryRepository
+                .findByUser_Id(userId)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Transactional
+    public LibraryEntryResponse update(
+            Long entryId,
+            Long userId,
+            UpdateLibraryEntryRequest request
+    ) {
+
+        LibraryEntry entry =
+                libraryEntryRepository
+                        .findByIdAndUser_Id(entryId, userId)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Library entry not found"
+                                )
+                        );
+
+        if (request.status() != null) {
+            entry.setStatus(request.status());
+        }
+
+        if (request.rating() != null) {
+            entry.setRating(request.rating());
+        }
+
+        if (request.hoursPlayed() != null) {
+            entry.setHoursPlayed(request.hoursPlayed());
+        }
+
+        return toResponse(entry);
+    }
+
+    @Transactional
+    public void delete(
+            Long entryId,
+            Long userId
+    ) {
+
+        LibraryEntry entry =
+                libraryEntryRepository
+                        .findByIdAndUser_Id(entryId, userId)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Library entry not found"
+                                )
+                        );
+
+        libraryEntryRepository.delete(entry);
     }
 }
