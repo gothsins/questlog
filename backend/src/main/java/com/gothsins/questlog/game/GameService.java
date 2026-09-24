@@ -4,6 +4,8 @@ import com.gothsins.questlog.exception.ResourceNotFoundException;
 import com.gothsins.questlog.game.dto.CreateGameRequest;
 import com.gothsins.questlog.game.dto.GameResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +17,10 @@ public class GameService {
 
     private final GameRepository gameRepository;
 
+    @CacheEvict(
+            value = "gamesList",
+            allEntries = true
+    )
     @Transactional
     public GameResponse create(CreateGameRequest request) {
 
@@ -39,14 +45,20 @@ public class GameService {
         );
     }
 
+    @Cacheable(
+            value = "gamesList",
+            key = "'all'"
+    )
     @Transactional(readOnly = true)
     public List<GameResponse> findAll() {
+
         return gameRepository.findAll()
                 .stream()
                 .map(this::toResponse)
                 .toList();
     }
 
+    @Cacheable(value = "games", key = "#id")
     @Transactional(readOnly = true)
     public GameResponse findById(Long id) {
 
