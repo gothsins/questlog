@@ -29,7 +29,19 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: Questlog API
+    description: Game backlog and personal library API
+    version: 1.0.0
 
 security:
   jwt:
