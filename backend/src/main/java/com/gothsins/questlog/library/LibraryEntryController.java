@@ -7,6 +7,11 @@ import com.gothsins.questlog.library.dto.LibraryEntryResponse;
 import com.gothsins.questlog.library.dto.UpdateLibraryEntryRequest;
 import com.gothsins.questlog.user.User;
 import com.gothsins.questlog.user.UserRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,9 +21,14 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(
+        name = "Library",
+        description = "Operations for the authenticated user's game library"
+)
 @RestController
 @RequestMapping("/api/library")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
 public class LibraryEntryController {
 
     private final LibraryEntryService libraryEntryService;
@@ -36,6 +46,32 @@ public class LibraryEntryController {
                 );
     }
 
+    @Operation(
+            summary = "Add game to library",
+            description = "Adds a game from the catalog to the authenticated user's personal library."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Game successfully added to library"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid request"
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Authentication required"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Game not found"
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Game already exists in user's library"
+            )
+    })
     @PostMapping
     public ResponseEntity<LibraryEntryResponse> addGame(
             @Valid @RequestBody AddGameToLibraryRequest request,
@@ -60,6 +96,20 @@ public class LibraryEntryController {
                 .body(response);
     }
 
+    @Operation(
+            summary = "List personal library",
+            description = "Returns all games belonging to the authenticated user's library."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Library successfully returned"
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Authentication required"
+            )
+    })
     @GetMapping
     public ResponseEntity<List<LibraryEntryResponse>> findAll(
             Authentication authentication
@@ -72,6 +122,28 @@ public class LibraryEntryController {
         );
     }
 
+    @Operation(
+            summary = "Update library entry",
+            description = "Updates status, rating or played hours of a game in the authenticated user's library."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Library entry successfully updated"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid update data"
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Authentication required"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Library entry not found"
+            )
+    })
     @PatchMapping("/{id}")
     public ResponseEntity<LibraryEntryResponse> update(
             @PathVariable Long id,
@@ -91,6 +163,24 @@ public class LibraryEntryController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(
+            summary = "Remove game from library",
+            description = "Removes a game from the authenticated user's personal library."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "Library entry successfully removed"
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Authentication required"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Library entry not found"
+            )
+    })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
             @PathVariable Long id,
