@@ -11,6 +11,13 @@ services:
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
 
+  redis:
+    image: redis:7-alpine
+    container_name: questlog-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
     volumes:
       - questlog_postgres_data:/var/lib/postgresql/data
 
