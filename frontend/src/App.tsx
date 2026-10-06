@@ -1,7 +1,13 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import {
+    Navigate,
+    Route,
+    Routes,
+} from 'react-router-dom'
+
 import LoginPage from './pages/LoginPage'
 import LibraryPage from './pages/LibraryPage'
 import ProtectedRoute from './routes/ProtectedRoute'
+import AuthenticatedLayout from './layouts/AuthenticatedLayout'
 
 function App() {
     return (
@@ -12,20 +18,32 @@ function App() {
             />
 
             <Route element={<ProtectedRoute />}>
-                <Route
-                    path="/library"
-                    element={<LibraryPage />}
-                />
+                <Route element={<AuthenticatedLayout />}>
+                    <Route
+                        path="/library"
+                        element={<LibraryPage />}
+                    />
+                </Route>
             </Route>
 
             <Route
                 path="/"
-                element={<Navigate to="/login" replace />}
+                element={
+                    <Navigate
+                        to="/login"
+                        replace
+                    />
+                }
             />
 
             <Route
                 path="*"
-                element={<Navigate to="/" replace />}
+                element={
+                    <Navigate
+                        to="/"
+                        replace
+                    />
+                }
             />
         </Routes>
     )

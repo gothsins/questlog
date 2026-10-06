@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { authenticatedFetch } from '../api/client'
 import type { LibraryEntry } from '../types/library'
+import GameCard from '../components/GameCard'
+import '../styles/library.css'
 
 function LibraryPage() {
     const navigate = useNavigate()
@@ -47,39 +49,49 @@ function LibraryPage() {
         loadLibrary()
     }, [navigate])
 
-    function handleLogout() {
-        sessionStorage.removeItem('questlog_token')
-        navigate('/login')
-    }
-
     if (loading) {
-        return <p>Carregando biblioteca...</p>
+        return (
+            <div className="library-state">
+                Carregando sua biblioteca...
+            </div>
+        )
     }
 
     return (
-        <main>
-            <h1>Minha biblioteca</h1>
+        <section>
+            <header className="library-header">
+                <div>
+                    <h1>Minha biblioteca</h1>
 
-            <button onClick={handleLogout}>
-                Sair
-            </button>
+                    <p>
+                        Acompanhe sua jornada pelos jogos.
+                    </p>
+                </div>
+            </header>
 
-            {error && <p>{error}</p>}
-
-            {!error && games.length === 0 && (
-                <p>Sua biblioteca está vazia.</p>
+            {error && (
+                <div className="library-state">
+                    {error}
+                </div>
             )}
 
-            {games.map((game) => (
-                <article key={game.id}>
-                    <h2>{game.title}</h2>
+            {!error && games.length === 0 && (
+                <div className="library-state">
+                    Sua biblioteca ainda está vazia.
+                </div>
+            )}
 
-                    <p>Status: {game.status}</p>
-                    <p>Nota: {game.rating ?? 'Sem nota'}</p>
-                    <p>Horas: {game.hoursPlayed}</p>
-                </article>
-            ))}
-        </main>
+            {!error && games.length > 0 && (
+                <div className="library-grid">
+                    {games.map((game) => (
+                        <GameCard
+                            key={game.id}
+                            game={game}
+                        />
+                    ))}
+                </div>
+            )}
+        </section>
     )
 }
 

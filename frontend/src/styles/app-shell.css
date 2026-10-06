@@ -1,0 +1,176 @@
+.app-shell {
+    min-height: 100vh;
+}
+
+.app-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+
+    border-bottom:
+            1px solid var(--border);
+
+    background:
+            rgba(9, 9, 11, 0.82);
+
+    backdrop-filter:
+            blur(16px);
+}
+
+.app-header__content {
+    width: min(1180px, calc(100% - 40px));
+
+    min-height: 68px;
+
+    margin: 0 auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.app-brand {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+
+    font-size: 18px;
+    font-weight: 800;
+
+    letter-spacing: -0.02em;
+}
+
+.app-brand__logo {
+    width: 36px;
+    height: 36px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 10px;
+
+    background:
+            linear-gradient(
+                    135deg,
+                    var(--primary),
+                    #5b21b6
+            );
+
+    color: white;
+
+    font-size: 16px;
+
+    box-shadow:
+            0 8px 24px
+            rgba(139, 92, 246, 0.2);
+}
+
+.app-navigation {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav-link {
+    padding: 9px 13px;
+
+    border-radius:
+            var(--radius-sm);
+
+    color:
+            var(--text-muted);
+
+    font-size: 14px;
+    font-weight: 600;
+
+    transition:
+            color 0.2s ease,
+            background 0.2s ease;
+}
+
+.nav-link:hover {
+    color:
+            var(--text);
+
+    background:
+            var(--surface-hover);
+}
+
+.nav-link--active {
+    color:
+            #ddd6fe;
+
+    background:
+            var(--primary-soft);
+}
+
+.logout-button {
+    margin-left: 6px;
+
+    padding: 9px 13px;
+
+    border:
+            1px solid var(--border);
+
+    border-radius:
+            var(--radius-sm);
+
+    background:
+            transparent;
+
+    color:
+            var(--text-muted);
+
+    font-weight:
+            600;
+
+    transition:
+            border-color 0.2s ease,
+            color 0.2s ease,
+            background 0.2s ease;
+}
+
+.logout-button:hover {
+    border-color:
+            var(--border-light);
+
+    background:
+            var(--surface-hover);
+
+    color:
+            var(--text);
+}
+
+.app-content {
+    width:
+            min(1180px, calc(100% - 40px));
+
+    margin:
+            0 auto;
+
+    padding:
+            48px 0 72px;
+}
+
+@media (max-width: 640px) {
+    .app-header__content {
+        width:
+                min(100% - 28px, 1180px);
+
+        min-height:
+                62px;
+    }
+
+    .app-content {
+        width:
+                min(100% - 28px, 1180px);
+
+        padding-top:
+                32px;
+    }
+
+    .app-brand span {
+        display: none;
+    }
+}
