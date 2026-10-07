@@ -82,7 +82,7 @@ public class LibraryEntryController {
 
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() ->
-                        new IllegalStateException("Authenticated user not found")
+                        new ResourceNotFoundException("Authenticated user not found")
                 );
 
         LibraryEntryResponse response =

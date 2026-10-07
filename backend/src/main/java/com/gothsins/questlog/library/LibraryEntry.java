@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
@@ -56,10 +57,10 @@ public class LibraryEntry {
     )
     private BigDecimal hoursPlayed = BigDecimal.ZERO;
 
+    @CreationTimestamp
     @Column(
             name = "created_at",
             nullable = false,
-            insertable = false,
             updatable = false
     )
     private LocalDateTime createdAt;

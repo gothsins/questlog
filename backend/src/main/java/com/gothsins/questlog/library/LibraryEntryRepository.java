@@ -4,12 +4,20 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.jpa.repository.EntityGraph;
 
-public interface LibraryEntryRepository extends JpaRepository<LibraryEntry, Long> {
+public interface LibraryEntryRepository
+        extends JpaRepository<LibraryEntry, Long> {
 
+    @EntityGraph(attributePaths = "game")
     List<LibraryEntry> findByUser_Id(Long userId);
 
     Optional<LibraryEntry> findByUser_IdAndGame_Id(
+            Long userId,
+            Long gameId
+    );
+
+    boolean existsByUser_IdAndGame_Id(
             Long userId,
             Long gameId
     );
@@ -18,10 +26,4 @@ public interface LibraryEntryRepository extends JpaRepository<LibraryEntry, Long
             Long id,
             Long userId
     );
-
-    boolean existsByUser_IdAndGame_Id(
-            Long userId,
-            Long gameId
-    );
-
 }
