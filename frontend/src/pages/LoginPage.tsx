@@ -2,11 +2,12 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { login } from '../api/auth'
+import { useQueryClient } from '@tanstack/react-query'
 import '../styles/login.css'
 
 function LoginPage() {
     const navigate = useNavigate()
-
+    const queryClient = useQueryClient()
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
     const [error, setError] = useState('')
@@ -28,6 +29,7 @@ function LoginPage() {
                 'questlog_token',
                 response.token,
             )
+            queryClient.clear()
 
             navigate('/library')
         } catch (error) {

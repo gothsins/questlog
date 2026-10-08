@@ -19,6 +19,12 @@ public class Game {
     private Long id;
 
     @Column(
+            name = "igdb_id",
+            unique = true
+    )
+    private Long igdbId;
+
+    @Column(
             nullable = false,
             length = 150
     )

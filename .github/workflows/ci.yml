@@ -56,6 +56,8 @@ jobs:
 
       JWT_SECRET: MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=
       JWT_EXPIRATION: 3600000
+      IGDB_CLIENT_ID: ci-test-client
+      IGDB_CLIENT_SECRET: ci-test-secret
 
     steps:
 

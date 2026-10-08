@@ -13,4 +13,5 @@ export interface LibraryEntry {
     hoursPlayed: number
     createdAt: string
     updatedAt: string
+    igdbId: number | null
 }

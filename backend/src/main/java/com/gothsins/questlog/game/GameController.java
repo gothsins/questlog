@@ -2,6 +2,8 @@ package com.gothsins.questlog.game;
 
 import com.gothsins.questlog.game.dto.CreateGameRequest;
 import com.gothsins.questlog.game.dto.GameResponse;
+import com.gothsins.questlog.igdb.IgdbService;
+import com.gothsins.questlog.igdb.dto.IgdbSearchResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -26,36 +28,7 @@ import java.util.List;
 public class GameController {
 
     private final GameService gameService;
-
-    @Operation(
-            summary = "Create game",
-            description = "Adds a new game to the Questlog catalog."
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "201",
-                    description = "Game successfully created"
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Invalid game data"
-            ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "Authentication required"
-            )
-    })
-    @PostMapping
-    public ResponseEntity<GameResponse> create(
-            @Valid @RequestBody CreateGameRequest request
-    ) {
-
-        GameResponse response = gameService.create(request);
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(response);
-    }
+    private final IgdbService igdbService;
 
     @Operation(
             summary = "List games",
@@ -99,5 +72,19 @@ public class GameController {
             @PathVariable Long id
     ) {
         return ResponseEntity.ok(gameService.findById(id));
+    }
+
+    @Operation(
+            summary = "Search games",
+            description = "Searches the IGDB catalog for games."
+    )
+    @GetMapping("/search")
+    public ResponseEntity<List<IgdbSearchResult>> searchGames(
+            @RequestParam String query
+    ) {
+
+        return ResponseEntity.ok(
+                igdbService.searchGames(query)
+        );
     }
 }

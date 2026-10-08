@@ -1,7 +1,8 @@
 package com.gothsins.questlog.library;
 
 import com.gothsins.questlog.exception.ResourceNotFoundException;
-import com.gothsins.questlog.game.dto.GameResponse;
+import com.gothsins.questlog.igdb.IgdbImportService;
+import com.gothsins.questlog.library.dto.ImportIgdbGameRequest;
 import com.gothsins.questlog.library.dto.AddGameToLibraryRequest;
 import com.gothsins.questlog.library.dto.LibraryEntryResponse;
 import com.gothsins.questlog.library.dto.UpdateLibraryEntryRequest;
@@ -33,6 +34,8 @@ public class LibraryEntryController {
 
     private final LibraryEntryService libraryEntryService;
     private final UserRepository userRepository;
+    private final IgdbImportService igdbImportService;
+
     private User getAuthenticatedUser(
             Authentication authentication
     ) {
@@ -89,6 +92,47 @@ public class LibraryEntryController {
                 libraryEntryService.addGameToLibrary(
                         user.getId(),
                         request.gameId()
+                );
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(response);
+    }
+
+    @Operation(
+            summary = "Import IGDB game into library",
+            description = "Imports or reuses an IGDB game and adds it to the authenticated user's library."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Game added to library"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid IGDB identifier"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Game not found in IGDB"
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Game already exists in user's library"
+            )
+    })
+    @PostMapping("/import")
+    public ResponseEntity<LibraryEntryResponse> importGame(
+            @Valid @RequestBody ImportIgdbGameRequest request,
+            Authentication authentication
+    ) {
+
+        User user = getAuthenticatedUser(authentication);
+
+        LibraryEntryResponse response =
+                igdbImportService.importToLibrary(
+                        user.getId(),
+                        request.igdbId()
                 );
 
         return ResponseEntity

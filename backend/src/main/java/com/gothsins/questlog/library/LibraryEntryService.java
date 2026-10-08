@@ -71,7 +71,8 @@ public class LibraryEntryService {
                 entry.getRating(),
                 entry.getHoursPlayed(),
                 entry.getCreatedAt(),
-                entry.getUpdatedAt()
+                entry.getUpdatedAt(),
+                entry.getGame().getIgdbId()
         );
     }
 

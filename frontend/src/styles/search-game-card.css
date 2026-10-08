@@ -1,0 +1,220 @@
+
+.signature-card {
+    position: relative;
+    overflow: hidden;
+
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+
+    background: var(--surface);
+
+    transition:
+            transform 0.25s ease,
+            border-color 0.25s ease,
+            box-shadow 0.25s ease;
+}
+
+.signature-card:hover {
+    transform: translateY(-5px);
+
+    border-color: rgba(139, 92, 246, 0.55);
+
+    box-shadow:
+            0 18px 40px rgba(0, 0, 0, 0.35),
+            0 0 25px rgba(139, 92, 246, 0.08);
+}
+
+.signature-card__artwork {
+    position: relative;
+    overflow: hidden;
+
+    aspect-ratio: 3 / 4;
+
+    background: #0c0b10;
+}
+
+.signature-card__artwork img {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+
+    transition: transform 0.4s ease;
+}
+
+.signature-card:hover .signature-card__artwork img {
+    transform: scale(1.045);
+}
+
+.signature-card__shade {
+    position: absolute;
+    inset: 0;
+
+    background: linear-gradient(
+            to top,
+            rgba(9, 9, 11, 0.45),
+            transparent 45%
+    );
+
+    pointer-events: none;
+}
+
+.signature-card__source {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+
+    padding: 5px 9px;
+
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 6px;
+
+    background: rgba(9, 9, 11, 0.68);
+    backdrop-filter: blur(8px);
+
+    color: #e9ddff;
+
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+}
+
+.signature-card__placeholder {
+    display: grid;
+    place-items: center;
+
+    width: 100%;
+    height: 100%;
+
+    background: linear-gradient(
+            135deg,
+            #25183c,
+            #111114 75%
+    );
+}
+
+.signature-card__placeholder span {
+    color: rgba(196, 181, 253, 0.25);
+
+    font-size: 68px;
+    font-weight: 900;
+}
+
+.signature-card__details {
+    padding: 16px;
+}
+
+.signature-card__details h3 {
+    min-height: 42px;
+    margin: 0;
+
+    color: var(--text);
+
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.4;
+
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+
+    overflow: hidden;
+}
+
+.signature-card__metadata {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    margin-top: 10px;
+
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .signature-card,
+    .signature-card__artwork img {
+        transition: none;
+    }
+}
+
+.signature-card__add {
+    width: 100%;
+    min-height: 42px;
+    margin-top: 16px;
+    padding: 10px 12px;
+
+    border: 1px solid rgba(139, 92, 246, 0.35);
+    border-radius: var(--radius-sm);
+
+    background: var(--primary-soft);
+    color: #ddd6fe;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    transition:
+            background 0.2s ease,
+            border-color 0.2s ease,
+            color 0.2s ease;
+}
+
+.signature-card__add:hover:not(:disabled) {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+.signature-card__add:focus-visible {
+    outline: 2px solid #c4b5fd;
+    outline-offset: 3px;
+}
+
+.signature-card__add:disabled {
+    cursor: default;
+    opacity: 0.65;
+}
+
+.signature-card__add--added {
+    background: rgba(34, 197, 94, 0.10);
+    border-color: rgba(34, 197, 94, 0.25);
+    color: #86efac;
+}
+
+.signature-card__add--added:disabled {
+    opacity: 1;
+}
+
+@media (max-width: 640px) {
+    .signature-card__details {
+        padding: 12px;
+    }
+
+    .signature-card__source {
+        top: 8px;
+        right: 8px;
+    }
+
+
+    .explore-feedback {
+        margin-bottom: 20px;
+        padding: 14px 16px;
+
+        border: 1px solid rgba(139, 92, 246, 0.3);
+        border-radius: var(--radius-sm);
+
+        background: var(--primary-soft);
+        color: #ddd6fe;
+
+        font-size: 14px;
+    }
+
+    .explore-library-warning {
+        margin-bottom: 20px;
+        color: #fbbf24;
+        font-size: 13px;
+    }
+}

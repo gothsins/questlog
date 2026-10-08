@@ -8,6 +8,7 @@ import LoginPage from './pages/LoginPage'
 import LibraryPage from './pages/LibraryPage'
 import ProtectedRoute from './routes/ProtectedRoute'
 import AuthenticatedLayout from './layouts/AuthenticatedLayout'
+import ExplorePage from './pages/ExplorePage'
 
 function App() {
     return (
@@ -22,6 +23,10 @@ function App() {
                     <Route
                         path="/library"
                         element={<LibraryPage />}
+                    />
+                    <Route
+                        path="/explore"
+                        element={<ExplorePage />}
                     />
                 </Route>
             </Route>

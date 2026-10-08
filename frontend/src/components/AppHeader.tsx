@@ -1,10 +1,13 @@
 import { NavLink, useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 
 function AppHeader() {
     const navigate = useNavigate()
+    const queryClient = useQueryClient()
 
     function handleLogout() {
         sessionStorage.removeItem('questlog_token')
+        queryClient.clear()
         navigate('/login')
     }
 
@@ -23,6 +26,16 @@ function AppHeader() {
                 </NavLink>
 
                 <nav className="app-navigation">
+                    <NavLink
+                        to="/explore"
+                        className={({ isActive }) =>
+                            isActive
+                                ? 'nav-link nav-link--active'
+                                : 'nav-link'
+                        }
+                    >
+                        Explorar
+                    </NavLink>
                     <NavLink
                         to="/library"
                         className={({ isActive }) =>

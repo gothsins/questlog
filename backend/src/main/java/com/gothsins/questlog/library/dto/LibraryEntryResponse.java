@@ -15,7 +15,8 @@ public record LibraryEntryResponse(
         BigDecimal rating,
         BigDecimal hoursPlayed,
         LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        LocalDateTime updatedAt,
+        Long igdbId
 
 ) {
 }

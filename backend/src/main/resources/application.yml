@@ -47,3 +47,9 @@ security:
   jwt:
     secret: ${JWT_SECRET}
     expiration: ${JWT_EXPIRATION:3600000}
+
+igdb:
+  client-id: ${IGDB_CLIENT_ID}
+  client-secret: ${IGDB_CLIENT_SECRET}
+  api-url: https://api.igdb.com/v4
+  token-url: https://id.twitch.tv/oauth2/token
