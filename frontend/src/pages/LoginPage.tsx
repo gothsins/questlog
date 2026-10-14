@@ -12,6 +12,7 @@ function LoginPage() {
     const [password, setPassword] = useState('')
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
+    const [showPassword, setShowPassword] = useState(false)
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault()
@@ -89,23 +90,43 @@ function LoginPage() {
                         />
                     </div>
 
+
                     <div className="form-group">
                         <label htmlFor="password">
                             Senha
                         </label>
 
-                        <input
-                            id="password"
-                            type="password"
-                            value={password}
-                            onChange={(event) =>
-                                setPassword(event.target.value)
-                            }
-                            placeholder="Digite sua senha"
-                            autoComplete="current-password"
-                            required
-                        />
+                        <div className="password-field">
+                            <input
+                                id="password"
+                                type={showPassword ? 'text' : 'password'}
+                                value={password}
+                                onChange={(event) =>
+                                    setPassword(event.target.value)
+                                }
+                                placeholder="Digite sua senha"
+                                autoComplete="current-password"
+                                required
+                            />
+
+                            <button
+                                type="button"
+                                className="password-visibility"
+                                onClick={() =>
+                                    setShowPassword((current) => !current)
+                                }
+                                aria-label={
+                                    showPassword
+                                        ? 'Ocultar senha'
+                                        : 'Mostrar senha'
+                                }
+                                aria-pressed={showPassword}
+                            >
+                                {showPassword ? 'Ocultar' : 'Mostrar'}
+                            </button>
+                        </div>
                     </div>
+
 
                     {error && (
                         <div

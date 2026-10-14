@@ -9,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.dao.DataIntegrityViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.util.List;
 
@@ -156,6 +157,42 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(
                         "HTTP method not allowed",
                         HttpStatus.METHOD_NOT_ALLOWED.value()
+                ));
+    }
+
+    @ExceptionHandler(NicknameAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleNicknameConflict(
+            NicknameAlreadyExistsException ex
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse(
+                        ex.getMessage(),
+                        HttpStatus.CONFLICT.value()
+                ));
+    }
+
+    @ExceptionHandler(AvatarValidationException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidAvatar(
+            AvatarValidationException ex
+    ) {
+        return ResponseEntity
+                .badRequest()
+                .body(new ErrorResponse(
+                        ex.getMessage(),
+                        HttpStatus.BAD_REQUEST.value()
+                ));
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ErrorResponse> handleOversizedUpload(
+            MaxUploadSizeExceededException ex
+    ) {
+        return ResponseEntity
+                .status(413)
+                .body(new ErrorResponse(
+                        "Image upload exceeds the allowed size",
+                        413
                 ));
     }
 }

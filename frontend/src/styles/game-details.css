@@ -1,0 +1,205 @@
+.game-details {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding-bottom: 80px;
+}
+
+.game-details__back {
+    display: inline-block;
+    margin-bottom: 32px;
+    color: #a78bfa;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.game-details__back:hover {
+    color: #c4b5fd;
+}
+
+.game-details__hero {
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr);
+    gap: 48px;
+    align-items: center;
+
+    padding: 32px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+
+    background:
+            radial-gradient(
+                    circle at 20% 10%,
+                    rgba(139, 92, 246, 0.18),
+                    transparent 65%
+            ),
+            var(--surface);
+}
+
+.game-details__cover {
+    overflow: hidden;
+    aspect-ratio: 3 / 4;
+    border-radius: var(--radius-md);
+    background: #1b1529;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.4);
+}
+
+.game-details__cover img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.game-details__placeholder {
+    display: grid;
+    place-items: center;
+    height: 100%;
+    color: #a78bfa;
+    font-size: 64px;
+    font-weight: 800;
+}
+
+.game-details__eyebrow {
+    color: #a78bfa;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+}
+
+.game-details__info h1 {
+    margin: 16px 0 32px;
+    font-size: clamp(32px, 4vw, 52px);
+    line-height: 1.12;
+    letter-spacing: -0.045em;
+}
+
+.game-details__metadata {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.game-details__metadata span {
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.game-details__metadata strong {
+    font-size: 15px;
+}
+
+.game-details__info p,
+.game-details__reviews p {
+    color: var(--text-muted);
+    line-height: 1.7;
+}
+
+.game-details__reviews {
+    margin-top: 48px;
+}
+
+.game-details__reviews h2 {
+    margin: 12px 0 20px;
+    font-size: 26px;
+    letter-spacing: -0.03em;
+}
+
+.game-details__state {
+    padding: 48px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+@media (max-width: 700px) {
+    .game-details__hero {
+        grid-template-columns: 1fr;
+        gap: 24px;
+        padding: 20px;
+    }
+
+    .game-details__cover {
+        width: min(100%, 240px);
+    }
+
+    .game-details__info h1 {
+        font-size: 32px;
+    }
+}
+
+.game-details__genres {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 24px 0;
+}
+
+.game-details__genres span {
+    padding: 7px 12px;
+    border: 1px solid rgba(139, 92, 246, 0.25);
+    border-radius: 999px;
+    background: rgba(139, 92, 246, 0.1);
+    color: #c4b5fd;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.game-details__summary {
+    white-space: pre-line;
+    line-height: 1.85;
+    max-width: 720px;
+}
+
+.game-details__gallery,
+.game-details__trailer {
+    margin-top: 48px;
+}
+
+.game-details__gallery h2,
+.game-details__trailer h2 {
+    margin-bottom: 20px;
+    font-size: 26px;
+}
+
+.game-details__screenshots {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.game-details__screenshots a {
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    aspect-ratio: 16 / 9;
+}
+
+.game-details__screenshots img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.game-details__screenshots a:hover img {
+    transform: scale(1.04);
+}
+
+.game-details__video {
+    overflow: hidden;
+    aspect-ratio: 16 / 9;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: #000;
+}
+
+.game-details__video iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+@media (max-width: 700px) {
+    .game-details__screenshots {
+        grid-template-columns: 1fr;
+    }
+}

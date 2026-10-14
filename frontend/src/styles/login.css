@@ -256,3 +256,41 @@
         font-size: 24px;
     }
 }
+
+.password-field {
+    position: relative;
+    width: 100%;
+}
+
+.password-field input {
+    width: 100%;
+    padding-right: 90px;
+}
+
+.password-visibility {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+
+    padding: 7px 9px;
+
+    border: none;
+    border-radius: 6px;
+
+    background: transparent;
+    color: #c4b5fd;
+
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.password-visibility:hover {
+    color: #ffffff;
+}
+
+.password-visibility:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}

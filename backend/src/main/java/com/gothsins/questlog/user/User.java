@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import java.util.UUID;
 
 
 import java.time.LocalDateTime;
@@ -27,6 +28,9 @@ public class User {
     )
     private String username;
 
+    @Column(name = "nickname", length = 24)
+    private String nickname;
+
     @Column(nullable = false)
     private String password;
 
@@ -37,4 +41,7 @@ public class User {
             updatable = false
     )
     private LocalDateTime createdAt;
+
+    @Column(name = "avatar_version")
+    private UUID avatarVersion;
 }

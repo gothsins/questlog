@@ -9,6 +9,8 @@ import LibraryPage from './pages/LibraryPage'
 import ProtectedRoute from './routes/ProtectedRoute'
 import AuthenticatedLayout from './layouts/AuthenticatedLayout'
 import ExplorePage from './pages/ExplorePage'
+import GameDetailsPage from './pages/GameDetailsPage'
+import ProfilePage from './pages/ProfilePage'
 
 function App() {
     return (
@@ -29,7 +31,16 @@ function App() {
                         element={<ExplorePage />}
                     />
                 </Route>
+                <Route
+                    path="/games/:gameId"
+                    element={<GameDetailsPage />}
+                />
             </Route>
+
+            <Route
+                path="/profile"
+                element={<ProfilePage />}
+            />
 
             <Route
                 path="/"

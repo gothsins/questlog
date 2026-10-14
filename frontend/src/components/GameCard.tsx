@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import type { LibraryEntry } from '../types/library'
+import { Link } from 'react-router-dom'
 
 interface GameCardProps {
     game: LibraryEntry
@@ -125,7 +126,14 @@ function GameCard({
 
             <div className="game-card__content">
                 <div className="game-card__header">
-                    <h2>{game.title}</h2>
+                    <h2>
+                        <Link
+                            to={`/games/${game.gameId}`}
+                            className="game-card__details-link"
+                        >
+                            {game.title}
+                        </Link>
+                    </h2>
 
                     <span
                         className={`status-badge status-badge--${game.status.toLowerCase()}`}
