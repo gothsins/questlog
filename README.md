@@ -479,6 +479,28 @@ From `frontend/`:
 npm run build
 ```
 
+### Pull request CI
+
+`.github/workflows/ci.yml` runs two independent jobs for pull requests targeting
+`feat/game-reviews` or `main`. It also runs on pushes to `main` and can be
+started manually. The frontend job uses Node 24 and runs `npm ci`, build, lint,
+and the existing tests. The backend job uses Java 21 and runs Maven's `*Test`
+and `*IT` classes, including `GameReviewRepositoryIT`, which the default
+Surefire selection would skip. A failing command fails its job and PR check.
+
+The backend job creates fresh PostgreSQL and Redis service containers on a
+GitHub-hosted runner. Ports are assigned for that job, and the test database is
+named `questlog_ci`. PostgreSQL uses trust authentication only inside this
+disposable runner, so CI needs no database password. The JWT signing key is
+generated in memory for each run; IGDB values are inert test placeholders. CI
+does not read local `.env` files or repository secrets. The workflow token has
+read-only repository access, and checkout does not retain its credentials.
+
+CI does not run browser end-to-end tests or deploy the application. GitHub
+branch protection must separately mark both jobs as required checks if merges
+should be blocked when CI fails. Fork pull requests may require approval under
+the repository's GitHub Actions policy before jobs start.
+
 ---
 
 ## 🔗 Main API Endpoints
