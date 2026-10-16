@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { MotionConfig, motion, useReducedMotion } from 'motion/react'
 
-import JourneyPreview from '../components/JourneyPreview'
+import ProductTour from '../components/ProductTour'
 import '../styles/landing.css'
-import '../styles/journey-preview.css'
+import '../styles/product-tour.css'
 
 const features = [
     {
@@ -164,7 +164,11 @@ function LandingPage() {
                             </p>
                         </motion.div>
 
-                        <JourneyPreview motionDisabled={motionDisabled} />
+                        <ProductTour
+                            reducedMotion={Boolean(reducedMotion)}
+                            paused={paused}
+                            onResume={() => setPaused(false)}
+                        />
                     </section>
 
                     <div

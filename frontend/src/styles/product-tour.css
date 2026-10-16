@@ -1,0 +1,683 @@
+.tour {
+    width: 100%;
+    max-width: 550px;
+    min-width: 0;
+    margin-inline: auto;
+    color: #f5f1ff;
+}
+.tour__topline {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 4px 14px;
+    color: #b7a8ca;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+}
+.tour__topline span:first-child {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+.tour__topline i {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #b79bff;
+    box-shadow: 0 0 12px #a78bfa;
+}
+.tour__window {
+    position: relative;
+    min-height: 455px;
+    overflow: hidden;
+    border: 1px solid #55426f;
+    border-radius: 15px;
+    background: #141019;
+    box-shadow:
+        0 30px 70px #0008,
+        0 0 70px #8b5cf61b;
+}
+.tour__chrome {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    height: 39px;
+    padding: 0 17px;
+    border-bottom: 1px solid #382b47;
+    background: #1d1725;
+    color: #9b8aaa;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+}
+.tour__dots {
+    display: flex;
+    gap: 5px;
+}
+.tour__dots i {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #6e5d7d;
+}
+.tour__dots i:first-child {
+    background: #b38a9c;
+}
+.tour__chrome-logo {
+    color: #cbb6ff;
+    font-size: 15px;
+    font-weight: 900;
+}
+.tour__screen {
+    min-height: 384px;
+}
+.tour__screen-content {
+    position: relative;
+    min-height: 384px;
+    padding: 23px 24px 18px;
+    background: radial-gradient(circle at 95% 0, #6e3da526, transparent 38%);
+}
+.tour__eyebrow {
+    margin: 0 0 9px;
+    color: #b899ff;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.17em;
+}
+.tour__screen h3 {
+    margin: 0;
+    color: #faf8ff;
+    font-size: 22px;
+    line-height: 1.18;
+    letter-spacing: -0.03em;
+}
+.tour__muted {
+    margin: 7px 0 0;
+    color: #a99eb4;
+    font-size: 11px;
+}
+.tour__search {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    height: 43px;
+    margin-top: 24px;
+    padding: 0 13px;
+    border: 1px solid #60477d;
+    border-radius: 8px;
+    background: #241b30;
+    color: #eee6fb;
+    font-size: 12px;
+    box-shadow: 0 0 0 3px #8252c50b;
+}
+.tour__search > span:first-child {
+    color: #c5a8ff;
+    font-size: 22px;
+    line-height: 1;
+}
+.tour__search > span:nth-child(2) {
+    flex: 1;
+}
+.tour__shortcut {
+    color: #9e8aad;
+}
+.tour__caret {
+    display: inline-block;
+    height: 13px;
+    width: 1px;
+    margin-left: 2px;
+    vertical-align: -2px;
+    background: #dac6ff;
+    animation: tour-caret 1s step-end infinite;
+}
+.tour__results-heading {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 25px 2px 9px;
+    color: #9d8baa;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+}
+.tour__result,
+.tour__library-game {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-height: 63px;
+    padding: 8px 10px;
+    border: 1px solid #493658;
+    border-radius: 9px;
+    background: #211927;
+}
+.tour__result > div:nth-child(2),
+.tour__library-game > div:nth-child(2) {
+    display: grid;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+}
+.tour__result strong,
+.tour__library-game strong {
+    font-size: 12px;
+}
+.tour__result div:nth-child(2) span,
+.tour__library-game div:nth-child(2) span {
+    color: #a89bb4;
+    font-size: 10px;
+}
+.tour__result > b {
+    color: #c4a7ff;
+    font-size: 18px;
+    font-weight: 400;
+}
+.tour__result--muted {
+    margin-top: 7px;
+    opacity: 0.55;
+}
+.tour__mini-cover {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 44px;
+    border-radius: 4px;
+    background: #3b4b67;
+    color: #d3e4ff;
+    font-size: 10px;
+    font-weight: 800;
+}
+.tour__mini-cover--red {
+    background: #653741;
+    color: #ffdcdf;
+}
+.tour__searching {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 63px;
+    padding: 10px 13px;
+    border: 1px solid #493658;
+    border-radius: 9px;
+    background: #211927;
+    color: #b7a9c4;
+    font-size: 11px;
+}
+.tour__searching i {
+    width: 15px;
+    height: 15px;
+    border: 2px solid #66517b;
+    border-top-color: #b893ee;
+    border-radius: 50%;
+    animation: tour-spin 1s linear infinite;
+}
+.tour__cover {
+    position: relative;
+    flex: 0 0 34px;
+    width: 34px;
+    height: 44px;
+    overflow: hidden;
+    display: grid;
+    place-items: end center;
+    padding-bottom: 5px;
+    border: 1px solid #a595643b;
+    border-radius: 4px;
+    background:
+        radial-gradient(circle at 50% 37%, #a7874366, transparent 41%),
+        linear-gradient(150deg, #50442c, #171722 78%);
+}
+.tour__cover-ring {
+    position: absolute;
+    top: 12%;
+    left: 26%;
+    width: 48%;
+    aspect-ratio: 1;
+    border: 1px solid #d9bd6a;
+    border-radius: 50%;
+    box-shadow:
+        0 0 10px #cda8447e,
+        inset 0 0 8px #d7b95e66;
+}
+.tour__cover-land {
+    position: absolute;
+    inset: 63% 0 0;
+    background: #14141b;
+    clip-path: polygon(
+        0 25%,
+        30% 0,
+        58% 35%,
+        83% 0,
+        100% 24%,
+        100% 100%,
+        0 100%
+    );
+}
+.tour__cover strong {
+    position: relative;
+    color: #e5d6a4;
+    font-family: Georgia, serif;
+    font-size: 5px;
+    text-align: center;
+    line-height: 1;
+    letter-spacing: 0.09em;
+}
+.tour__cover--large {
+    width: 128px;
+    height: 174px;
+    flex-basis: 128px;
+    border-radius: 8px;
+}
+.tour__cover--large .tour__cover-ring {
+    border-width: 2px;
+    box-shadow:
+        0 0 25px #cda8448c,
+        inset 0 0 20px #d7b95e66;
+}
+.tour__cover--large strong {
+    margin-bottom: 14px;
+    font-size: 17px;
+    text-shadow: 0 2px 6px #000;
+}
+.tour__detail {
+    display: flex;
+    gap: 19px;
+    align-items: center;
+    min-height: 222px;
+}
+.tour__detail-copy {
+    min-width: 0;
+}
+.tour__pill {
+    display: inline-block;
+    margin-bottom: 10px;
+    padding: 5px 7px;
+    border: 1px solid #765a9a;
+    border-radius: 4px;
+    color: #ccb2ff;
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 0.09em;
+}
+.tour__detail-copy h3 {
+    font-size: 25px;
+}
+.tour__detail-copy p {
+    margin: 8px 0;
+    color: #a99eb4;
+    font-size: 10px;
+    line-height: 1.5;
+}
+.tour__add {
+    width: fit-content;
+    max-width: 100%;
+    margin-top: 15px;
+    padding: 10px 11px;
+    border: 1px solid #aa83ec;
+    border-radius: 7px;
+    background: linear-gradient(120deg, #7c3aed, #5c2baf);
+    color: white;
+    font-size: 10px;
+    font-weight: 800;
+    text-align: center;
+}
+.tour__add--done {
+    border-color: #6fbd9b;
+    background: #205240;
+    color: #dbffec;
+}
+.tour__notice {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 11px;
+    padding: 11px 12px;
+    border: 1px solid #586e63;
+    border-radius: 8px;
+    background: #183229;
+}
+.tour__notice > span {
+    display: grid;
+    place-items: center;
+    flex: 0 0 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: #296948;
+    color: #b4f3cc;
+    font-size: 15px;
+}
+.tour__notice div {
+    display: grid;
+    gap: 3px;
+}
+.tour__notice strong {
+    color: #ddffeb;
+    font-size: 11px;
+}
+.tour__notice small {
+    color: #a9c7b5;
+    font-size: 9px;
+}
+.tour__detail-meta {
+    display: flex;
+    gap: 22px;
+    margin-top: 20px;
+    padding-top: 13px;
+    border-top: 1px solid #3c3048;
+}
+.tour__detail-meta span {
+    display: grid;
+    gap: 6px;
+    color: #8e7f9d;
+    font-size: 8px;
+    letter-spacing: 0.09em;
+}
+.tour__detail-meta b {
+    color: #d0c3df;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0;
+}
+.tour__library-stats {
+    display: flex;
+    gap: 9px;
+    margin: 22px 0 12px;
+}
+.tour__library-stats > div {
+    display: grid;
+    flex: 1;
+    gap: 4px;
+    padding: 10px 12px;
+    border: 1px solid #473852;
+    border-radius: 8px;
+    background: #231a2b;
+}
+.tour__library-stats strong {
+    font-size: 19px;
+    font-variant-numeric: tabular-nums;
+}
+.tour__library-stats span {
+    color: #ae9fb8;
+    font-size: 9px;
+}
+.tour__library-game--selected {
+    border-color: #a17bd8;
+    background: #31213f;
+}
+.tour__status {
+    padding: 6px 7px;
+    border: 1px solid #69537c;
+    border-radius: 5px;
+    color: #c6b2d9;
+    font-size: 9px;
+}
+.tour__status--playing {
+    border-color: #9978d3;
+    background: #6c3ca13b;
+    color: #dfc6ff;
+}
+.tour__library-detail {
+    position: relative;
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 13px;
+    padding: 12px;
+    border: 1px solid #4b3a5d;
+    border-radius: 8px;
+    background: #1e1727;
+}
+.tour__library-detail > div:first-child {
+    display: grid;
+    gap: 5px;
+}
+.tour__library-detail > div:first-child span {
+    color: #ad94c8;
+    font-size: 8px;
+    letter-spacing: 0.08em;
+}
+.tour__library-detail > div:first-child strong {
+    font-size: 11px;
+}
+.tour__status-field {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 19px;
+    min-width: 94px;
+    padding: 8px;
+    border: 1px solid #765894;
+    border-radius: 5px;
+    background: #32233f;
+    color: #e4d1f6;
+    font-size: 10px;
+}
+.tour__status-field b {
+    font-size: 15px;
+    line-height: 0.5;
+}
+.tour__status-menu {
+    position: absolute;
+    z-index: 2;
+    right: 12px;
+    top: calc(100% - 5px);
+    display: grid;
+    min-width: 95px;
+    padding: 5px;
+    border: 1px solid #80619c;
+    border-radius: 6px;
+    background: #332343;
+    box-shadow: 0 9px 22px #0008;
+    font-size: 10px;
+}
+.tour__status-menu > * {
+    padding: 6px;
+}
+.tour__status-menu > strong {
+    display: flex;
+    justify-content: space-between;
+    gap: 5px;
+    border-radius: 4px;
+    background: #604082;
+    color: #fff;
+}
+.tour__notice--playing {
+    margin-top: 12px;
+    border-color: #6c5790;
+    background: #302044;
+}
+.tour__notice--playing > span {
+    background: #6b3fa3;
+    color: #edd9ff;
+}
+.tour__notice--playing strong {
+    color: #f2e5ff;
+}
+.tour__notice--playing small {
+    color: #c6afd7;
+}
+.tour__footnote {
+    position: absolute;
+    right: 15px;
+    bottom: 8px;
+    color: #857692;
+    font-size: 8px;
+    letter-spacing: 0.1em;
+}
+.tour__cursor {
+    position: absolute;
+    z-index: 5;
+    top: 0;
+    left: 0;
+    width: 28px;
+    height: 32px;
+    pointer-events: none;
+    filter: drop-shadow(0 3px 3px #000b);
+}
+.tour__cursor svg {
+    width: 25px;
+    height: 29px;
+    fill: #f7edff;
+    stroke: #7044a7;
+    stroke-width: 1.5px;
+}
+.tour__cursor-ripple {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #e8d4ff;
+    border-radius: 50%;
+    animation: tour-click 0.42s ease-out forwards;
+}
+.tour__highlight {
+    box-shadow:
+        0 0 0 2px #bd9dfb,
+        0 0 20px #9b67ea45;
+}
+.tour__controls {
+    display: grid;
+    gap: 9px;
+    margin-top: 13px;
+}
+.tour__scene-buttons,
+.tour__play-buttons {
+    display: flex;
+    gap: 7px;
+}
+.tour__scene-buttons button {
+    flex: 1;
+    min-width: 0;
+}
+.tour__controls button {
+    min-height: 39px;
+    padding: 7px 9px;
+    border: 1px solid #4c3b5d;
+    border-radius: 7px;
+    background: #1c1524;
+    color: #b7a9c4;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        background 0.2s,
+        border-color 0.2s,
+        color 0.2s;
+}
+.tour__controls button:hover {
+    background: #30213f;
+    color: white;
+}
+.tour__controls button:focus-visible {
+    outline: 2px solid #d4b8ff;
+    outline-offset: 3px;
+}
+.tour__scene-buttons button[aria-pressed='true'] {
+    border-color: #a17ad9;
+    background: #43275f;
+    color: white;
+}
+.tour__scene-buttons button span {
+    margin-right: 7px;
+    color: #b58cef;
+    font-size: 9px;
+}
+.tour__play-buttons button {
+    flex: 1;
+}
+.tour__caption {
+    min-height: 49px;
+    margin-top: 11px;
+    text-align: center;
+}
+.tour__caption strong {
+    color: #e9d8ff;
+    font-size: 12px;
+}
+.tour__caption p {
+    margin: 5px 0 0;
+    color: #ac9fb9;
+    font-size: 10px;
+}
+@keyframes tour-caret {
+    50% {
+        opacity: 0;
+    }
+}
+@keyframes tour-click {
+    to {
+        opacity: 0;
+        transform: scale(2.4);
+    }
+}
+@keyframes tour-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+@media (max-width: 520px) {
+    .tour__window {
+        min-height: 420px;
+    }
+    .tour__screen,
+    .tour__screen-content {
+        min-height: 350px;
+    }
+    .tour__screen-content {
+        padding: 17px 14px 18px;
+    }
+    .tour__screen h3 {
+        font-size: 19px;
+    }
+    .tour__detail {
+        gap: 12px;
+    }
+    .tour__cover--large {
+        flex-basis: 96px;
+        width: 96px;
+        height: 145px;
+    }
+    .tour__cover--large strong {
+        font-size: 13px;
+    }
+    .tour__detail-copy h3 {
+        font-size: 21px;
+    }
+    .tour__detail-copy p {
+        font-size: 9px;
+    }
+    .tour__add {
+        font-size: 9px;
+        padding: 8px;
+    }
+    .tour__scene-buttons button {
+        font-size: 10px;
+    }
+    .tour__scene-buttons button span {
+        margin-right: 3px;
+    }
+}
+@media (max-width: 360px) {
+    .tour__cover--large {
+        flex-basis: 78px;
+        width: 78px;
+        height: 128px;
+    }
+    .tour__detail {
+        gap: 9px;
+    }
+    .tour__chrome {
+        padding-inline: 10px;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .tour *,
+    .tour *::before,
+    .tour *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}

@@ -1,5 +1,18 @@
 # React + TypeScript + Vite
 
+## Landing product tour
+
+The public `/` route contains a local, illustrative product tour. Its script and
+control state live in `src/components/tourScript.ts`; the UI is in
+`ProductTour.tsx` and `product-tour.css`. The sample game and status changes are
+frontend constants and state only. The tour does not call the API, access a
+session, or persist data. It pauses outside the viewport, when the tab is
+hidden, or when the visitor presses Pause, and stops after the final scene.
+With reduced motion, each scene is a static snapshot and the next-scene control
+advances manually.
+
+Run `npm ci`, `npm run build`, `npm run lint`, and `npm test` from this directory.
+
 This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
 
 Currently, two official plugins are available:
