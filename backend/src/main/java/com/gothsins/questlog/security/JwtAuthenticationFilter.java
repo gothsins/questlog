@@ -85,9 +85,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
         } catch (
-                JwtException |
-                IllegalArgumentException |
-                UsernameNotFoundException ex
+                JwtException
+                | IllegalArgumentException
+                | UsernameNotFoundException ex
         ) {
             SecurityContextHolder.clearContext();
         }

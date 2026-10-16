@@ -1,9 +1,8 @@
 import {
-    Navigate,
-    Route,
-    Routes,
-} from 'react-router-dom'
+    Navigate, Route, Routes,} from 'react-router-dom'
 
+import RegisterPage from './pages/RegisterPage'
+import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
 import LibraryPage from './pages/LibraryPage'
 import ProtectedRoute from './routes/ProtectedRoute'
@@ -18,6 +17,10 @@ function App() {
             <Route
                 path="/login"
                 element={<LoginPage />}
+            />
+            <Route
+                path="/register"
+                element={<RegisterPage />}
             />
 
             <Route element={<ProtectedRoute />}>
@@ -44,12 +47,7 @@ function App() {
 
             <Route
                 path="/"
-                element={
-                    <Navigate
-                        to="/login"
-                        replace
-                    />
-                }
+                element={<LandingPage />}
             />
 
             <Route

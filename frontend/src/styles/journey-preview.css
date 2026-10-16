@@ -1,0 +1,493 @@
+.journey {
+    position: relative;
+    min-width: 0;
+    width: 100%;
+    max-width: 540px;
+    margin-inline: auto;
+    isolation: isolate;
+}
+
+.journey__scene-label {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 5px 16px;
+    color: #a1a1aa;
+    font-size: 9px;
+    letter-spacing: 0.13em;
+    font-weight: 600;
+}
+
+.journey__scene-label > span:first-child {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.journey__scene-label i {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #c4b5fd;
+    box-shadow: 0 0 12px #8b5cf6;
+}
+.journey__window {
+    position: relative;
+    width: 100%;
+    background: #131017;
+    box-shadow:
+        0 28px 75px #0007,
+        0 0 60px #8b5cf612;
+}
+.journey__window .landing__preview-body {
+    padding: 20px;
+}
+.journey__window .landing__preview-heading {
+    margin-bottom: 16px;
+}
+.journey__window .landing__preview-heading h2 {
+    font-size: 21px;
+}
+.journey__window .landing__preview-stats {
+    margin-block: 14px;
+    gap: 8px;
+}
+.journey__window .landing__preview-stats > div {
+    padding: 11px 13px;
+    gap: 3px;
+}
+.journey__window .landing__preview-stats strong {
+    font-size: 20px;
+    font-variant-numeric: tabular-nums;
+}
+.journey__window .landing__preview-game {
+    padding: 8px 10px;
+}
+.journey__window .landing__preview-footer {
+    font-size: 9px;
+    color: #a1a1aa;
+}
+
+.journey__orbit {
+    position: absolute;
+    z-index: -1;
+    width: 115%;
+    aspect-ratio: 1;
+    top: 2%;
+    left: -7.5%;
+    border: 1px solid #a78bfa15;
+    border-radius: 50%;
+    pointer-events: none;
+}
+.journey__orbit--two {
+    width: 135%;
+    left: -17.5%;
+    top: -5%;
+    border-style: dashed;
+    animation: journey-orbit 100s linear infinite;
+}
+.journey__orbit--one::before {
+    content: '';
+    position: absolute;
+    left: 15%;
+    top: 13%;
+    width: 5px;
+    height: 5px;
+    background: #c4b5fd;
+    border-radius: 50%;
+    box-shadow: 0 0 20px #a78bfa;
+}
+.journey__spark {
+    position: absolute;
+    color: #a78bfa;
+    animation: journey-float 7s ease-in-out infinite;
+}
+.journey__spark--one {
+    top: 19%;
+    right: -25px;
+    font-size: 22px;
+}
+.journey__spark--two {
+    top: 68%;
+    left: -27px;
+    font-size: 18px;
+    animation-delay: -3s;
+}
+
+/* Original vector-like landscape, built locally without remote image assets. */
+.journey__art {
+    position: relative;
+    height: 154px;
+    overflow: hidden;
+    border: 1px solid #69508b55;
+    border-radius: 10px;
+    background:
+        radial-gradient(ellipse at 70% 50%, #7045a45c, transparent 60%),
+        linear-gradient(125deg, #181225, #302040 65%, #181426);
+}
+.journey__art-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(#c4b5fd08 1px, transparent 1px),
+        linear-gradient(90deg, #c4b5fd08 1px, transparent 1px);
+    background-size: 28px 28px;
+    mask-image: linear-gradient(90deg, transparent, black);
+}
+.journey__moon {
+    position: absolute;
+    top: 19px;
+    right: 30%;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #c4b5fd0d;
+    border: 1px solid #c4b5fd3b;
+    box-shadow: 0 0 40px #a78bfa15;
+    animation: journey-float 9s ease-in-out infinite;
+}
+.journey__halo {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    right: -6px;
+    top: -29px;
+    border: 1px solid #b99bfa35;
+    border-radius: 50%;
+    box-shadow:
+        0 0 0 17px #b99bfa08,
+        0 0 0 48px #b99bfa04;
+    animation: journey-breathe 6s ease-in-out infinite;
+}
+.journey__mountain {
+    position: absolute;
+    inset: 38% -10% -1px 24%;
+    background: #382550;
+    clip-path: polygon(0 100%, 43% 10%, 63% 65%, 78% 38%, 100% 100%);
+}
+.journey__mountain--front {
+    inset: 49% -10% -1px 9%;
+    background: #1c142b;
+    clip-path: polygon(0 100%, 40% 20%, 50% 50%, 66% 0, 100% 100%);
+}
+.journey__portal {
+    position: absolute;
+    right: 15%;
+    bottom: 25px;
+    width: 43px;
+    height: 70px;
+    border: 1px solid #cfb8ff;
+    border-bottom: 0;
+    border-radius: 24px 24px 0 0;
+    background: linear-gradient(#a78bfa70, #8b5cf610);
+    box-shadow:
+        0 0 24px #8b5cf670,
+        inset 0 0 15px #c4b5fd30;
+    animation: journey-breathe 5s ease-in-out infinite;
+}
+.journey__portal span {
+    position: absolute;
+    inset: 6px 6px 0;
+    border: 1px solid #e9d5ff50;
+    border-bottom: 0;
+    border-radius: inherit;
+}
+.journey__art::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(90deg, #171021c9, transparent 90%),
+        linear-gradient(0deg, #100c1a77, transparent 40%);
+}
+.journey__art-caption {
+    position: absolute;
+    left: 18px;
+    bottom: 20px;
+    z-index: 1;
+    display: grid;
+    gap: 8px;
+}
+.journey__art-caption > span {
+    font-size: 8px;
+    letter-spacing: 0.14em;
+    color: #c4b5fd;
+}
+.journey__art-caption > strong {
+    max-width: 165px;
+    font-size: 25px;
+    line-height: 1.08;
+    letter-spacing: -0.04em;
+}
+.journey__art-coordinate {
+    position: absolute;
+    top: 12px;
+    left: 15px;
+    z-index: 1;
+    font:
+        8px ui-monospace,
+        monospace;
+    letter-spacing: 0.13em;
+    color: #c4b5fd80;
+}
+.journey__art--completed .journey__portal {
+    border-color: #d1fae5;
+    background: linear-gradient(#a7f3d04d, #8b5cf610);
+}
+
+.journey__window .journey__game--active {
+    border-color: #8b5cf655;
+    background: linear-gradient(100deg, #8b5cf615, #19151f);
+}
+.journey__window .landing__game-cover {
+    width: 31px;
+    height: 38px;
+    font-size: 10px;
+    letter-spacing: 0.03em;
+    border: 1px solid #ffffff15;
+}
+.journey__window .journey__cover--gold {
+    background: linear-gradient(150deg, #736243, #25231f 70%);
+    color: #e4d2a3;
+}
+.journey__window .journey__cover--blue {
+    background: linear-gradient(150deg, #52637e, #1b2235 70%);
+    color: #cedcf4;
+}
+.journey__window .journey__cover--red {
+    background: linear-gradient(150deg, #854951, #351b29 70%);
+    color: #fbcaca;
+}
+.journey__progress-heading {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-block: 17px 9px;
+    font-size: 9px;
+    color: #a1a1aa;
+}
+.journey__progress-heading strong {
+    color: #c4b5fd;
+    font-variant-numeric: tabular-nums;
+}
+.journey__progress {
+    height: 3px;
+    overflow: hidden;
+    background: #302a3a;
+    border-radius: 3px;
+}
+.journey__progress span {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, #7c3aed, #c4b5fd);
+    border-radius: inherit;
+}
+
+.journey__notification {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    width: calc(100% - 38px);
+    min-height: 67px;
+    margin: -5px 0 0 19px;
+    padding: 13px 16px;
+    border: 1px solid #675080;
+    border-radius: 12px;
+    background: #21182f;
+    box-shadow: 0 12px 34px #0004;
+    animation: journey-float 8s ease-in-out infinite;
+}
+.journey__notification-icon {
+    flex: 0 0 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    border: 1px solid #a78bfa30;
+    border-radius: 10px;
+    background: #8b5cf61a;
+    font-size: 20px;
+    color: #c4b5fd;
+}
+.journey__notification-icon--completed {
+    color: #86efac;
+    background: #22c55e15;
+    border-color: #86efac30;
+}
+.journey__notification > div {
+    display: grid;
+    gap: 5px;
+}
+.journey__notification strong {
+    color: #ede9fe;
+    font-size: 11px;
+}
+.journey__notification div span {
+    color: #b2a7c2;
+    font-size: 9px;
+}
+
+.journey__chapters {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 24px;
+}
+.journey__chapters button {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 40px;
+    overflow: hidden;
+    border: 1px solid #302a3a;
+    border-radius: 8px;
+    background: #151119;
+    color: #a1a1aa;
+    font-size: 11px;
+    transition:
+        background 0.2s,
+        border-color 0.2s;
+}
+.journey__chapters button:hover {
+    background: #211a2e;
+    border-color: #6b4c95;
+}
+.journey__chapters button[aria-pressed='true'] {
+    color: #e9d5ff;
+    border-color: #8b5cf670;
+    background: #8b5cf618;
+}
+.journey__chapter-number {
+    color: #8b779e;
+    font:
+        9px ui-monospace,
+        monospace;
+}
+.journey__chapter-timer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: #a78bfa;
+    transform-origin: left;
+    transform: scaleX(0);
+    animation: journey-timer 6s linear forwards;
+}
+.journey__caption {
+    min-height: 62px;
+    margin-top: 15px;
+    text-align: center;
+}
+.journey__caption strong {
+    color: #d4c7e7;
+    font-size: 12px;
+    font-weight: 600;
+}
+.journey__caption p {
+    margin: 6px 0 0;
+    color: #a1a1aa;
+    font-size: 10px;
+    line-height: 1.6;
+}
+
+.journey[data-running='false'] *,
+.journey[data-running='false'] *::before,
+.journey[data-running='false'] *::after {
+    animation-play-state: paused !important;
+}
+.journey[data-running='false'] .journey__chapter-timer {
+    transform: scaleX(1);
+    animation: none;
+    opacity: 0.5;
+}
+
+@keyframes journey-orbit {
+    to {
+        transform: rotate(360deg);
+    }
+}
+@keyframes journey-float {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-7px);
+    }
+}
+@keyframes journey-breathe {
+    0%,
+    100% {
+        opacity: 0.6;
+        transform: scale(0.98);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.02);
+    }
+}
+@keyframes journey-timer {
+    to {
+        transform: scaleX(1);
+    }
+}
+
+@media (max-width: 520px) {
+    .journey {
+        max-width: 420px;
+    }
+    .journey__scene-label {
+        font-size: 8px;
+    }
+    .journey__window .landing__preview-body {
+        padding: 14px;
+    }
+    .journey__window .landing__preview-stats > div {
+        padding: 10px;
+    }
+    .journey__window .landing__preview-stats span {
+        font-size: 10px;
+    }
+    .journey__window .landing__preview-game {
+        gap: 8px;
+    }
+    .journey__window .landing__game-info strong {
+        font-size: 12px;
+    }
+    .journey__window .landing__game-info > span {
+        font-size: 10px;
+    }
+    .journey__window .landing__status {
+        padding: 6px;
+        font-size: 9px;
+    }
+    .journey__notification {
+        padding: 12px;
+        width: calc(100% - 16px);
+        margin-left: 8px;
+    }
+    .journey__notification strong {
+        font-size: 10px;
+    }
+    .journey__notification div span {
+        font-size: 8px;
+    }
+    .journey__chapters button {
+        min-height: 44px;
+    }
+    .journey__spark {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .journey *,
+    .journey *::before,
+    .journey *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}
