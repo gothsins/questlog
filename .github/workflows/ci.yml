@@ -70,7 +70,7 @@ jobs:
           IGDB_CLIENT_SECRET: ci-offline
         run: |
           export JWT_SECRET="$(openssl rand -base64 32)"
-          bash ./mvnw -B -ntp clean test '-Dtest=*Test,*IT'
+          bash ./mvnw -B -ntp clean test '-Dtest=*Test,*Tests,*IT'
 
   frontend:
     name: Frontend build, lint and tests
