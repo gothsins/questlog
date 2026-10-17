@@ -54,6 +54,9 @@ Supported operations:
 
 ### API Protection
 
+Security hardening decisions and deployment settings are documented in
+[Security Hardening 2.0](docs/security-hardening.md).
+
 - JWT authentication
 - Rate limiting with Bucket4j + Redis
 - Database constraints for data integrity

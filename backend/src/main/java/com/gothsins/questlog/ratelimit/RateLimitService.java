@@ -2,6 +2,7 @@ package com.gothsins.questlog.ratelimit;
 
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.BucketConfiguration;
+import io.github.bucket4j.ConsumptionProbe;
 import io.github.bucket4j.redis.lettuce.cas.LettuceBasedProxyManager;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +20,7 @@ public class RateLimitService {
         this.proxyManager = proxyManager;
     }
 
-    public boolean isAllowed(
+    public RateLimitDecision check(
             String key,
             int maxRequests,
             Duration window
@@ -36,11 +37,18 @@ public class RateLimitService {
                         )
                         .build();
 
-        Bucket bucket = proxyManager.getProxy(
-                key,
-                () -> configuration
-        );
-
-        return bucket.tryConsume(1);
+        try {
+            Bucket bucket = proxyManager.getProxy(key, () -> configuration);
+            ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(1);
+            if (probe.isConsumed()) {
+                return RateLimitDecision.allowedRequest();
+            }
+            long nanos = probe.getNanosToWaitForRefill();
+            long seconds = nanos / 1_000_000_000L
+                    + (nanos % 1_000_000_000L == 0 ? 0 : 1);
+            return RateLimitDecision.rejected(seconds);
+        } catch (RuntimeException exception) {
+            throw new RateLimitUnavailableException();
+        }
     }
 }

@@ -10,7 +10,6 @@ public record RegisterRequest(
         String username,
 
         @NotBlank
-        @Size(min = 8, max = 72)
         String password
 
 ) {
