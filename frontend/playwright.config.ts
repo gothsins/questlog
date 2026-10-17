@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
+import { FRONTEND_ORIGIN, MOCK_API_ORIGIN } from './e2e/network'
 
-const port = 4173
+const port = new URL(FRONTEND_ORIGIN).port
 
 export default defineConfig({
     testDir: './e2e',
@@ -11,7 +12,7 @@ export default defineConfig({
     reporter: process.env.CI ? [['list']] : [['list'], ['html', { open: 'never' }]],
     outputDir: 'test-results',
     use: {
-        baseURL: `http://127.0.0.1:${port}`,
+        baseURL: FRONTEND_ORIGIN,
         trace: 'retain-on-failure',
         screenshot: 'only-on-failure',
         serviceWorkers: 'block',
@@ -22,9 +23,9 @@ export default defineConfig({
     ],
     webServer: {
         command: `npm run dev -- --host 127.0.0.1 --port ${port} --strictPort`,
-        url: `http://127.0.0.1:${port}`,
-        reuseExistingServer: !process.env.CI,
+        url: FRONTEND_ORIGIN,
+        reuseExistingServer: false,
         timeout: 60_000,
-        env: { VITE_API_URL: 'http://127.0.0.1:8080' },
+        env: { VITE_API_URL: MOCK_API_ORIGIN },
     },
 })

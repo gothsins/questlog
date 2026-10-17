@@ -25,10 +25,15 @@ npm audit --audit-level=high
 its own Vite server on `127.0.0.1:4173`; close another server on that port
 before running it. The browser tests run in desktop Chrome and a Pixel 7
 viewport. `e2e/mockApi.ts` intercepts Questlog API calls with local fixtures,
-including fictitious login, game, and library state. Unexpected API calls fail
-the test. No backend, IGDB, Steam, Pwned Passwords, account, or real JWT is
-needed. The mock session token is only a visual fixture. Failed tests leave
-screenshots and traces in ignored `frontend/test-results/`; keep those files
+including fictitious login, game, and library state. The browser context
+allows HTTP only to the local Vite server on `127.0.0.1:4173`; explicitly
+handled API calls at `127.0.0.1:8080` receive mock responses without a network
+request. All other HTTP and WebSocket destinations are blocked and reported.
+The runner refuses to reuse a Vite server already listening on that port,
+preventing an inherited API configuration. No backend, IGDB, Steam, Pwned
+Passwords, account, or real JWT is needed. The mock session token is only a
+visual fixture. Failed tests leave screenshots and traces in ignored
+`frontend/test-results/`; keep those files
 private if you later add tests with real credentials.
 
 The browser suite covers the product tour, public navigation, registration
@@ -66,9 +71,9 @@ disposable service configuration is in `.github/workflows/ci.yml`.
 | `CodeQL security / CodeQL javascript-typescript` | Source analysis and extended security queries | Extraction/analyzer failure is red; findings appear in code scanning |
 | `Secret scan / Secrets in proposed commits` | Gitleaks CLI over commits proposed by the PR | Detected secret or scanner error is red |
 
-CodeQL runs on PRs targeting `feat/game-reviews` or `main`, pushes to `main`,
-and manual dispatch. Other security workflows run on those PRs. The existing
-CI additionally runs on pushes to `main` and manual dispatch. CodeQL and CI
+CodeQL runs on PRs targeting `feat/game-reviews` or `main`, pushes to either
+branch, and manual dispatch. Other security workflows run on those PRs. The
+existing CI additionally runs on pushes to `main` and manual dispatch. CodeQL and CI
 cancel superseded runs on the same ref. Jobs have read-only repository access
 except CodeQL's `security-events: write` permission to upload findings.
 Checkout does not retain credentials. The PR event executes untrusted source

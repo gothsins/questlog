@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [feat/game-reviews, main]
   push:
-    branches: [main]
+    branches: [feat/game-reviews, main]
   workflow_dispatch:
 
 permissions:

@@ -1,4 +1,5 @@
-import { expect, test as base, type Page } from '@playwright/test'
+import { expect, test as base, type BrowserContext, type Page } from '@playwright/test'
+import { FRONTEND_ORIGIN, MOCK_API_ORIGIN } from './network'
 
 const date = '2026-01-01T00:00:00'
 
@@ -37,12 +38,32 @@ export class MockApi {
     loginSucceeds = false
     registrationSucceeds = false
 
-    async install(page: Page) {
-        await page.route('http://127.0.0.1:8080/api/**', async (route) => {
+    async install(context: BrowserContext) {
+        await context.routeWebSocket(/.*/, async (socket) => {
+            const url = new URL(socket.url())
+            if (url.origin === FRONTEND_ORIGIN.replace('http:', 'ws:')) {
+                socket.connectToServer()
+                return
+            }
+            this.unexpected.push(`WS ${url.origin}${url.pathname}`)
+            await socket.close({ code: 1008, reason: 'Blocked by E2E network policy' })
+        })
+
+        await context.route(/.*/, async (route) => {
             const request = route.request()
-            const path = new URL(request.url()).pathname
+            const url = new URL(request.url())
+            const path = url.pathname
             const method = request.method()
             const call = `${method} ${path}`
+
+            if (url.origin === FRONTEND_ORIGIN && (method === 'GET' || method === 'HEAD')) {
+                return route.continue()
+            }
+            if (url.origin !== MOCK_API_ORIGIN || !path.startsWith('/api/')) {
+                this.unexpected.push(`${method} ${url.origin}${path}`)
+                return route.abort('blockedbyclient')
+            }
+
             this.calls.push(call)
             const json = (body: unknown, status = 200) =>
                 route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) })
@@ -101,16 +122,21 @@ export class MockApi {
                 return json({ steamAppId: null, available: false,
                     reviews: [], nextCursor: null })
             }
-            this.unexpected.push(call)
-            return route.abort()
+            this.unexpected.push(`${method} ${url.origin}${path}`)
+            return route.abort('blockedbyclient')
         })
+    }
+
+    assertBlocked(destination: string) {
+        expect(this.unexpected).toContain(destination)
+        this.unexpected.splice(this.unexpected.indexOf(destination), 1)
     }
 }
 
 export const test = base.extend<{ api: MockApi }>({
-    api: async ({ page }, applyFixture) => {
+    api: async ({ context }, applyFixture) => {
         const api = new MockApi()
-        await api.install(page)
+        await api.install(context)
         await applyFixture(api)
         expect(api.unexpected, 'Unexpected API calls must be explicitly mocked').toEqual([])
     },

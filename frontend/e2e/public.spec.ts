@@ -49,6 +49,39 @@ test('protected library redirects visitors without a session', async ({ page, ap
     expect(api.calls).toEqual([])
 })
 
+test('unexpected external HTTP and WebSocket destinations are blocked', async ({ page, api }) => {
+    await page.goto('/')
+    const httpRejected = await page.evaluate(async () => {
+        try {
+            await fetch('https://unexpected.invalid/questlog-probe')
+            return false
+        } catch {
+            return true
+        }
+    })
+    expect(httpRejected).toBe(true)
+    api.assertBlocked('GET https://unexpected.invalid/questlog-probe')
+
+    const apiRejected = await page.evaluate(async () => {
+        try {
+            await fetch('http://127.0.0.1:8080/api/unexpected')
+            return false
+        } catch {
+            return true
+        }
+    })
+    expect(apiRejected).toBe(true)
+    api.assertBlocked('GET http://127.0.0.1:8080/api/unexpected')
+
+    const socketClosed = await page.evaluate(() => new Promise<boolean>((resolve) => {
+        const socket = new WebSocket('wss://unexpected.invalid/questlog-probe')
+        socket.addEventListener('open', () => resolve(false), { once: true })
+        socket.addEventListener('close', () => resolve(true), { once: true })
+    }))
+    expect(socketClosed).toBe(true)
+    api.assertBlocked('WS wss://unexpected.invalid/questlog-probe')
+})
+
 test('mobile public pages do not overflow horizontally', async ({ page, api }, testInfo) => {
     test.skip(!testInfo.project.name.startsWith('mobile'), 'Mobile viewport only')
     for (const path of ['/', '/login', '/register']) {
