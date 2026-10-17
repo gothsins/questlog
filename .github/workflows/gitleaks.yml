@@ -1,0 +1,29 @@
+name: Secret scan
+
+on:
+  pull_request:
+    branches: [feat/game-reviews, main]
+
+permissions:
+  contents: read
+
+jobs:
+  gitleaks:
+    name: Secrets in proposed commits
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out full PR history
+        uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Scan commits without printing secret values
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE:/repo:ro" -w /repo \
+            ghcr.io/gitleaks/gitleaks@sha256:691af3c7c5a48b16f187ce3446d5f194838f91238f27270ed36eef6359a574d9 \
+            git --no-banner --redact=100 --log-opts="${BASE_SHA}..HEAD" /repo
