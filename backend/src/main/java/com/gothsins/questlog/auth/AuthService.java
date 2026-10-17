@@ -23,13 +23,23 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final PasswordPolicy passwordPolicy;
+    private final PwnedPasswordService pwnedPasswordService;
 
     @Transactional
     public UserResponse register(RegisterRequest request) {
 
+        passwordPolicy.validate(request.password());
+
         if (userRepository.existsByUsername(request.username())) {
             throw new UsernameAlreadyExistsException(
                     "Username already exists"
+            );
+        }
+
+        if (pwnedPasswordService.isCompromised(request.password())) {
+            throw new PasswordRejectedException(
+                    "This password appears in a breach; choose another"
             );
         }
 

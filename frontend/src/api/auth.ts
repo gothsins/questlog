@@ -46,10 +46,25 @@ export async function register(
         throw new Error('Este nome de usuário já está em uso.')
     }
     if (response.status === 400) {
-        throw new Error('Dados inválidos. Confira o usuário e a senha.')
+        const body: { message?: string } = await response.json().catch(() => ({}))
+        const messages: Record<string, string> = {
+            'Choose a less common password': 'Escolha uma senha menos comum.',
+            'This password appears in a breach; choose another': 'Esta senha apareceu em um vazamento. Escolha outra.',
+            'Password must contain at least 8 characters': 'A senha deve ter pelo menos 8 caracteres.',
+            'Password must be at most 72 UTF-8 bytes': 'A senha deve ter no máximo 72 bytes em UTF-8.',
+            'Password contains invalid Unicode': 'A senha contém caracteres inválidos.',
+        }
+        throw new Error(messages[body?.message ?? ''] ?? 'Dados inválidos. Confira o usuário e a senha.')
     }
     if (response.status === 429) {
         throw new Error('Muitas tentativas de cadastro. Aguarde um pouco.')
+    }
+    if (response.status === 503) {
+        const body: { message?: string } = await response.json().catch(() => ({}))
+        if (body?.message === 'Password safety check unavailable; try again later') {
+            throw new Error('Não foi possível verificar a segurança da senha agora. Tente novamente mais tarde.')
+        }
+        throw new Error('Cadastro temporariamente indisponível. Tente novamente mais tarde.')
     }
     if (!response.ok) {
         throw new Error('Não foi possível criar sua conta. Tente novamente.')

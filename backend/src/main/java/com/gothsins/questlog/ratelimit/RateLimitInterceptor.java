@@ -4,12 +4,15 @@ import com.gothsins.questlog.exception.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.time.Duration;
+import java.nio.charset.StandardCharsets;
 
 @Component
 public class RateLimitInterceptor implements HandlerInterceptor {
@@ -33,6 +36,9 @@ public class RateLimitInterceptor implements HandlerInterceptor {
     ) throws Exception {
 
         String path = request.getRequestURI();
+        if (!HttpMethod.POST.matches(request.getMethod())) {
+            return true;
+        }
         String ip = request.getRemoteAddr();
 
         int maxRequests;
@@ -59,34 +65,34 @@ public class RateLimitInterceptor implements HandlerInterceptor {
                         ":" +
                         ip;
 
-        boolean allowed = rateLimitService.isAllowed(
-                key,
-                maxRequests,
-                window
-        );
+        RateLimitDecision decision;
+        try {
+            decision = rateLimitService.check(key, maxRequests, window);
+        } catch (RateLimitUnavailableException exception) {
+            writeError(response, HttpStatus.SERVICE_UNAVAILABLE,
+                    exception.getMessage());
+            return false;
+        }
 
-        if (allowed) {
+        if (decision.allowed()) {
             return true;
         }
 
-        response.setStatus(
-                HttpStatus.TOO_MANY_REQUESTS.value()
-        );
-
-        response.setContentType(
-                MediaType.APPLICATION_JSON_VALUE
-        );
-
-        ErrorResponse error = new ErrorResponse(
-                "Too many requests",
-                HttpStatus.TOO_MANY_REQUESTS.value()
-        );
-
-        jsonMapper.writeValue(
-                response.getWriter(),
-                error
-        );
+        response.setHeader(HttpHeaders.RETRY_AFTER,
+                Long.toString(decision.retryAfterSeconds()));
+        writeError(response, HttpStatus.TOO_MANY_REQUESTS,
+                "Too many requests");
 
         return false;
+    }
+
+    private void writeError(HttpServletResponse response,
+                            HttpStatus status, String message) throws Exception {
+        response.setStatus(status.value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store");
+        jsonMapper.writeValue(response.getWriter(),
+                new ErrorResponse(message, status.value()));
     }
 }

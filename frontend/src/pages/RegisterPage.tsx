@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { motion, useReducedMotion } from 'motion/react'
 
 import { register } from '../api/auth'
+import { registrationPasswordError } from './registrationPassword'
 import '../styles/login.css'
 import '../styles/register.css'
 
@@ -31,8 +32,9 @@ function RegisterPage() {
             return
         }
 
-        if (password.length < 8 || password.length > 72) {
-            setError('A senha deve ter entre 8 e 72 caracteres.')
+        const passwordError = registrationPasswordError(password)
+        if (passwordError) {
+            setError(passwordError)
             return
         }
 
@@ -154,8 +156,6 @@ function RegisterPage() {
                                         onChange={(event) => { setPassword(event.target.value); setError('') }}
                                         placeholder="Crie uma senha"
                                         autoComplete="new-password"
-                                        minLength={8}
-                                        maxLength={72}
                                         disabled={loading}
                                         required
                                         aria-describedby="register-password-help"
@@ -171,7 +171,7 @@ function RegisterPage() {
                                         {showPassword ? 'Ocultar' : 'Mostrar'}
                                     </button>
                                 </div>
-                                <small id="register-password-help" className="register-v2__help">De 8 a 72 caracteres.</small>
+                                <small id="register-password-help" className="register-v2__help">Pelo menos 8 caracteres e no máximo 72 bytes em UTF-8. Evite senhas comuns.</small>
                             </div>
 
                             <div className="login-v2__field">
@@ -185,8 +185,6 @@ function RegisterPage() {
                                         onChange={(event) => { setConfirmPassword(event.target.value); setError('') }}
                                         placeholder="Digite a senha novamente"
                                         autoComplete="new-password"
-                                        minLength={8}
-                                        maxLength={72}
                                         disabled={loading}
                                         required
                                     />

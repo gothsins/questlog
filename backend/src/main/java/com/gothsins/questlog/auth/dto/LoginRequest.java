@@ -2,6 +2,7 @@ package com.gothsins.questlog.auth.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 public record LoginRequest(
 
@@ -10,6 +11,7 @@ public record LoginRequest(
                 example = "gui"
         )
         @NotBlank
+        @Size(max = 50)
         String username,
 
         @Schema(
@@ -17,6 +19,7 @@ public record LoginRequest(
                 example = "minhaSenha123"
         )
         @NotBlank
+        @Size(max = 256)
         String password
 
 ) {

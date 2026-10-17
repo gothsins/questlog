@@ -2,6 +2,7 @@ package com.gothsins.questlog.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -74,8 +75,12 @@ public class SecurityConfig {
                 .authenticationProvider(authenticationProvider)
 
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/auth/login",
+                                "/api/auth/register"
+                        ).permitAll()
+
                         .requestMatchers(
-                                "/api/auth/**",
                                 "/actuator/health",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
@@ -144,13 +149,18 @@ public class SecurityConfig {
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    public CorsConfigurationSource corsConfigurationSource(
+            @Value("${security.cors.allowed-origins:http://localhost:5173}")
+            List<String> allowedOrigins
+    ) {
+
+        if (allowedOrigins.isEmpty() || allowedOrigins.contains("*")) {
+            throw new IllegalArgumentException("CORS requires explicit origins");
+        }
 
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(
-                List.of("http://localhost:5173")
-        );
+        configuration.setAllowedOrigins(allowedOrigins);
 
         configuration.setAllowedMethods(
                 List.of(
@@ -171,6 +181,7 @@ public class SecurityConfig {
         );
 
         configuration.setAllowCredentials(false);
+        configuration.setExposedHeaders(List.of("Retry-After"));
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
