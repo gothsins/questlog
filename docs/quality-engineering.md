@@ -60,12 +60,11 @@ disposable service configuration is in `.github/workflows/ci.yml`.
 | Workflow / job | What runs | PR result |
 | --- | --- | --- |
 | `Questlog CI / Backend tests` | Java 21, Maven unit and integration tests, temporary PostgreSQL/Redis | Any test/build failure is red |
-| `Questlog CI / Frontend build, lint and tests` | Node 24, locked install, production build, lint, existing tests | Any command failure is red |
+| `Questlog CI / Frontend build, lint and tests` | Node 24, locked install, production build, lint, existing tests; `npm audit` report | Build/lint/tests fail red; audit is advisory |
 | `Questlog CI / Browser E2E (mock API)` | Locked install, Chromium, Playwright fixtures | Failing test is red; failure traces/screenshots retained for one day |
 | `CodeQL security / CodeQL java-kotlin` | Manual Java compile and extended security queries | Extraction/analyzer failure is red; findings appear in code scanning |
 | `CodeQL security / CodeQL javascript-typescript` | Source analysis and extended security queries | Extraction/analyzer failure is red; findings appear in code scanning |
 | `Secret scan / Secrets in proposed commits` | Gitleaks CLI over commits proposed by the PR | Detected secret or scanner error is red |
-| `Dependency review / New vulnerable dependencies` | GitHub advisory review of newly introduced Maven/npm dependencies | High or critical known advisory is red |
 
 CodeQL runs on PRs targeting `feat/game-reviews` or `main`, pushes to `main`,
 and manual dispatch. Other security workflows run on those PRs. The existing
@@ -75,14 +74,18 @@ except CodeQL's `security-events: write` permission to upload findings.
 Checkout does not retain credentials. The PR event executes untrusted source
 without production secrets. Only failure artifacts are uploaded, for one day.
 
-The Dependency Review action compares the PR's dependency graph with its base,
-so it **does not** audit all pre-existing dependencies. It requires GitHub's
-dependency graph and advisory data; if either service is unavailable, the job
-must fail rather than silently claiming coverage. `npm audit` is an additional
-manual snapshot check. We did not add an OWASP Dependency-Check gate: the NVD
+GitHub's free Dependency Review action was tested on PR #5, but GitHub rejected
+it because this repository's dependency graph is disabled. It was removed
+instead of leaving a permanently failing job. Repository administrators may
+enable the free dependency graph in repository security settings; after that,
+Dependency Review can be reconsidered to block **new** high/critical Maven and
+npm advisories. This milestone does not automatically block vulnerable
+dependencies. The CI frontend job runs `npm audit --audit-level=high` as a
+visible, non-blocking report; it needs npm advisory access and can change as
+the database changes. We did not add an OWASP Dependency-Check gate: the NVD
 data feed/key and updates would make an unauthenticated PR check slow and
-unreliable. Review existing Maven/npm dependencies periodically through
-GitHub dependency alerts and local audits. Advisory findings can be false
+unreliable. Maven has no vulnerability scanner in this CI yet. Review Maven
+dependencies manually until the dependency graph is enabled. Advisory findings can be false
 positives for unreachable code or versions with backported fixes; document
 the exact package, affected version, severity, exploitability, and available
 fix before changing a gate. Never suppress an advisory just to make CI green.

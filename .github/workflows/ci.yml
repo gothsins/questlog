@@ -109,6 +109,11 @@ jobs:
         working-directory: frontend
         run: npm test
 
+      - name: Report npm dependency advisories (non-blocking)
+        working-directory: frontend
+        continue-on-error: true
+        run: npm audit --audit-level=high
+
   browser:
     name: Browser E2E (mock API)
     runs-on: ubuntu-24.04

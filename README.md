@@ -501,7 +501,8 @@ read-only repository access, and checkout does not retain its credentials. The
 browser job runs Chromium against the frontend with local API fixtures; no
 backend or external game service is contacted.
 
-CodeQL, secret scanning, and dependency review run in separate workflows.
+CodeQL and secret scanning run in separate workflows. The frontend CI job
+also reports npm dependency advisories without blocking the PR.
 See [quality engineering](docs/quality-engineering.md) for local commands,
 failure criteria, scope, and limitations. CI does not deploy the application.
 GitHub branch protection must separately mark the desired jobs as required
