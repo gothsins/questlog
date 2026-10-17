@@ -23,6 +23,7 @@ interface Props {
     data?: SteamWrittenReviews
     loading: boolean
     error: boolean
+    onRetry?: () => void
 }
 
 const numberFormatter = new Intl.NumberFormat('pt-BR', {
@@ -125,6 +126,7 @@ function SteamWrittenReviewsPanel({
                                       data,
                                       loading,
                                       error,
+                                      onRetry,
                                   }: Props) {
     return (
         <section
@@ -138,23 +140,26 @@ function SteamWrittenReviewsPanel({
                     </span>
 
                     <h2 id="steam-written-heading">
-                        O que os jogadores estão dizendo
+                        Análises de jogadores
                     </h2>
 
                     <p>
-                        Avaliações publicadas na Steam.
+                        Uma seleção de análises escritas publicadas na Steam.
                     </p>
                 </div>
             </div>
 
             {loading ? (
-                <p className="steam-written__state" role="status">
-                    Carregando avaliações...
-                </p>
+                <div className="steam-written__state steam-written__state--loading" role="status" aria-label="Carregando análises">
+                    <div className="steam-written__skeleton" />
+                    <div className="steam-written__skeleton" />
+                    <span className="game-details__sr-only">Carregando análises...</span>
+                </div>
             ) : error ? (
-                <p className="steam-written__state" role="status">
-                    Não foi possível carregar as avaliações.
-                </p>
+                <div className="steam-written__state" role="status">
+                    <p>Não foi possível carregar as análises.</p>
+                    {onRetry && <button type="button" onClick={onRetry}>Tentar novamente</button>}
+                </div>
             ) : !data?.available ? (
                 <p className="steam-written__state">
                     Avaliações da Steam não disponíveis
