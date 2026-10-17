@@ -37,6 +37,32 @@
     letter-spacing: -0.03em;
 }
 
+.steam-reviews__subtitle {
+    margin: 8px 0 0;
+    color: #a1a1aa;
+    font-size: 13px;
+}
+
+.steam-reviews__scope {
+    display: inline-block;
+    margin-bottom: 16px;
+    color: #c4b5fd;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .13em;
+}
+
+.steam-reviews__message p { margin: 0 0 12px; }
+.steam-reviews__loading { display: grid; gap: 18px; padding: 8px 0; }
+.steam-reviews__skeleton {
+    border-radius: 8px;
+    background: #2b2436;
+    animation: steam-pulse 1.6s ease-in-out infinite alternate;
+}
+.steam-reviews__skeleton--score { width: 220px; height: 54px; }
+.steam-reviews__skeleton--bar { width: 100%; height: 11px; border-radius: 999px; }
+@keyframes steam-pulse { to { opacity: .5; } }
+
 .steam-reviews__link {
     padding: 9px 14px;
 
@@ -173,4 +199,10 @@
         align-items: center;
         gap: 12px;
     }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .steam-reviews__progress-fill,
+    .steam-reviews__link { transition: none; }
+    .steam-reviews__skeleton { animation: none; }
 }

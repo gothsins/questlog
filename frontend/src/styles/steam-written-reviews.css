@@ -148,6 +148,16 @@
     color: #a1a1aa;
     background: #141218;
 }
+.steam-written__state--loading { display: grid; gap: 12px; }
+.steam-written__skeleton {
+    width: 100%;
+    height: 20px;
+    border-radius: 6px;
+    background: #302a3a;
+    animation: steam-written-pulse 1.6s ease-in-out infinite alternate;
+}
+.steam-written__skeleton:last-of-type { width: 67%; }
+@keyframes steam-written-pulse { to { opacity: .5; } }
 
 .steam-written__disclaimer {
     margin-top: 20px;
@@ -179,4 +189,5 @@
     .steam-written__card:hover {
         transform: none;
     }
+    .steam-written__skeleton { animation: none; }
 }

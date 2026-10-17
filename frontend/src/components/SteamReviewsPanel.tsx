@@ -1,4 +1,5 @@
 
+import { reviewPercentage } from './gameDetailsPresentation'
 import '../styles/steam-reviews.css'
 
 export interface SteamReviews {
@@ -15,6 +16,7 @@ interface SteamReviewsPanelProps {
     reviews?: SteamReviews
     loading: boolean
     error: boolean
+    onRetry?: () => void
 }
 
 const scoreTranslations: Record<string, string> = {
@@ -35,8 +37,9 @@ function SteamReviewsPanel({
                                reviews,
                                loading,
                                error,
+                               onRetry,
                            }: SteamReviewsPanelProps) {
-    const percentage = reviews?.positivePercentage ?? null
+    const percentage = reviewPercentage(reviews?.positivePercentage)
 
     const formattedPercentage = percentage === null
         ? '—'
@@ -53,7 +56,7 @@ function SteamReviewsPanel({
     let message: string | null = null
 
     if (loading) {
-        message = 'Carregando avaliações da Steam...'
+        message = 'Carregando avaliação geral da Steam...'
     } else if (error) {
         message = 'Não foi possível consultar as avaliações da Steam.'
     } else if (!reviews?.available) {
@@ -76,6 +79,7 @@ function SteamReviewsPanel({
                     <h2 id="steam-reviews-heading">
                         Avaliações na Steam
                     </h2>
+                    <p className="steam-reviews__subtitle">Resumo geral de todas as avaliações disponíveis</p>
                 </div>
 
                 {reviews?.steamAppId && (
@@ -90,12 +94,20 @@ function SteamReviewsPanel({
                 )}
             </div>
 
-            {message ? (
-                <p className="steam-reviews__message" role="status">
-                    {message}
-                </p>
+            {loading ? (
+                <div className="steam-reviews__loading" role="status" aria-label={message ?? 'Carregando avaliações da Steam'}>
+                    <div className="steam-reviews__skeleton steam-reviews__skeleton--score" />
+                    <div className="steam-reviews__skeleton steam-reviews__skeleton--bar" />
+                    <span className="game-details__sr-only">{message}</span>
+                </div>
+            ) : message ? (
+                <div className="steam-reviews__message" role="status">
+                    <p>{message}</p>
+                    {error && onRetry && <button type="button" onClick={onRetry}>Tentar novamente</button>}
+                </div>
             ) : (
                 <div className="steam-reviews__content">
+                    <span className="steam-reviews__scope">AVALIAÇÃO GERAL</span>
                     <div className="steam-reviews__score">
                         <strong>{formattedPercentage}</strong>
 
@@ -127,27 +139,21 @@ function SteamReviewsPanel({
                         <div>
                             <span>Positivas</span>
                             <strong>
-                                {numberFormatter.format(
-                                    reviews?.totalPositive ?? 0,
-                                )}
+                                {reviews?.totalPositive == null ? '—' : numberFormatter.format(reviews.totalPositive)}
                             </strong>
                         </div>
 
                         <div>
                             <span>Negativas</span>
                             <strong>
-                                {numberFormatter.format(
-                                    reviews?.totalNegative ?? 0,
-                                )}
+                                {reviews?.totalNegative == null ? '—' : numberFormatter.format(reviews.totalNegative)}
                             </strong>
                         </div>
 
                         <div>
                             <span>Total de avaliações</span>
                             <strong>
-                                {numberFormatter.format(
-                                    reviews?.totalReviews ?? 0,
-                                )}
+                                {reviews?.totalReviews == null ? '—' : numberFormatter.format(reviews.totalReviews)}
                             </strong>
                         </div>
                     </div>
