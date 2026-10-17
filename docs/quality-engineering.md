@@ -85,10 +85,14 @@ visible, non-blocking report; it needs npm advisory access and can change as
 the database changes. We did not add an OWASP Dependency-Check gate: the NVD
 data feed/key and updates would make an unauthenticated PR check slow and
 unreliable. Maven has no vulnerability scanner in this CI yet. Review Maven
-dependencies manually until the dependency graph is enabled. Advisory findings can be false
-positives for unreachable code or versions with backported fixes; document
+dependencies manually until the dependency graph is enabled. Advisory findings
+can be false positives for unreachable code or versions with backported fixes; document
 the exact package, affected version, severity, exploitability, and available
 fix before changing a gate. Never suppress an advisory just to make CI green.
+
+The workflows pin `github/codeql-action` v4.38.1 and Gitleaks v8.30.0 by
+immutable SHA/digest. The npm advisory threshold is high (including critical),
+but its CI step is advisory. Gitleaks findings fail the PR job.
 
 CodeQL availability is included for public repositories, but its findings are
 alerts and do not automatically fail this workflow. Require checks through
