@@ -23,6 +23,8 @@ jobs:
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
+          git rev-parse --is-inside-work-tree
+          test "$(git rev-list --count "${BASE_SHA}..HEAD")" -gt 0
           docker run --rm \
             -v "$GITHUB_WORKSPACE:/repo:ro" -w /repo \
             ghcr.io/gitleaks/gitleaks@sha256:691af3c7c5a48b16f187ce3446d5f194838f91238f27270ed36eef6359a574d9 \
