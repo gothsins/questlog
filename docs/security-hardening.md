@@ -18,7 +18,8 @@ zero count. SHA-1 is used only for this lookup; BCrypt remains the stored
 password hash. Passwords, full SHA-1 hashes and suffixes are never sent to the
 service or written to application logs. The client sets `Add-Padding: true`,
 uses HTTPS by default, does not follow redirects and limits both time and
-response size.
+response size. The deadline covers the entire response body, including a
+provider that sends headers but stalls before sending the body.
 
 | Environment variable | Default | Purpose |
 | --- | --- | --- |
@@ -46,14 +47,26 @@ instead of allowing unmetered attempts. Failure during the eager Redis
 connection can prevent startup; this is also fail closed.
 
 The key uses the servlet connection address (`getRemoteAddr`) and deliberately
-ignores caller-supplied `X-Forwarded-For`. This avoids spoofed identities. When
+ignores caller-supplied `X-Forwarded-For`. `server.forward-headers-strategy`
+is explicitly `none`: on supported cloud platforms Spring Boot can otherwise
+default to native forwarded-header handling and rewrite `getRemoteAddr`.
+This avoids spoofed identities. When
 deploying behind a reverse proxy, ensure the trusted edge applies its own
 abuse controls and forwards requests through a controlled network; otherwise
 all clients may share the proxy's bucket. Do not enable generic forwarded-header
-trust without restricting direct access to the application. A username-based
+trust without restricting direct access to the application and validating the
+trusted proxy chain. If the deployment needs forwarded scheme or host data,
+configure that at a trusted gateway or review a narrowly configured proxy
+strategy before changing this setting. A username-based
 bucket was not added: an attacker could deliberately exhaust another user's
 bucket and learn or interfere with account activity. Reassess with a design
 that avoids targeted lockout and username enumeration.
+
+The login DTO does not apply the new registration password limits to existing
+accounts. Legacy passwords, including those over 72 bytes, still reach the
+existing BCrypt authentication flow; the rate limit constrains attempts.
+Bucket keys use the URI without its servlet context path, so an alternate
+context path does not bypass the same login and registration limits.
 
 ## Security review and production preparation
 

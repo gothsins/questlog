@@ -35,7 +35,8 @@ public class RateLimitInterceptor implements HandlerInterceptor {
             Object handler
     ) throws Exception {
 
-        String path = request.getRequestURI();
+        String path = request.getRequestURI()
+                .substring(request.getContextPath().length());
         if (!HttpMethod.POST.matches(request.getMethod())) {
             return true;
         }

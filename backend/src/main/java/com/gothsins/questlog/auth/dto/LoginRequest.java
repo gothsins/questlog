@@ -19,7 +19,6 @@ public record LoginRequest(
                 example = "minhaSenha123"
         )
         @NotBlank
-        @Size(max = 256)
         String password
 
 ) {

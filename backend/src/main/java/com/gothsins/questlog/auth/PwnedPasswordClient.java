@@ -4,13 +4,20 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Flow;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 @Component
 public class PwnedPasswordClient {
@@ -64,25 +71,69 @@ public class PwnedPasswordClient {
                 .GET()
                 .build();
 
+        CompletableFuture<HttpResponse<byte[]>> responseFuture = httpClient.sendAsync(
+                request, info -> new LimitedBodySubscriber(MAX_RESPONSE_BYTES));
         try {
-            HttpResponse<InputStream> response = httpClient.send(
-                    request, HttpResponse.BodyHandlers.ofInputStream()
-            );
-            try (InputStream body = response.body()) {
-                if (response.statusCode() != 200) {
-                    throw new PwnedPasswordUnavailableException();
-                }
-                byte[] bytes = body.readNBytes(MAX_RESPONSE_BYTES + 1);
-                if (bytes.length > MAX_RESPONSE_BYTES) {
-                    throw new PwnedPasswordUnavailableException();
-                }
-                return new String(bytes, StandardCharsets.US_ASCII);
+            HttpResponse<byte[]> response = responseFuture.get(
+                    timeout.toNanos(), TimeUnit.NANOSECONDS);
+            if (response.statusCode() != 200) {
+                throw new PwnedPasswordUnavailableException();
             }
+            return new String(response.body(), StandardCharsets.US_ASCII);
         } catch (InterruptedException exception) {
+            responseFuture.cancel(true);
             Thread.currentThread().interrupt();
             throw new PwnedPasswordUnavailableException();
-        } catch (IOException exception) {
+        } catch (ExecutionException | TimeoutException exception) {
+            responseFuture.cancel(true);
             throw new PwnedPasswordUnavailableException();
+        }
+    }
+
+    private static final class LimitedBodySubscriber
+            implements HttpResponse.BodySubscriber<byte[]> {
+        private final HttpResponse.BodySubscriber<byte[]> delegate =
+                HttpResponse.BodySubscribers.ofByteArray();
+        private final int maxBytes;
+        private Flow.Subscription subscription;
+        private int received;
+
+        private LimitedBodySubscriber(int maxBytes) {
+            this.maxBytes = maxBytes;
+        }
+
+        @Override
+        public CompletionStage<byte[]> getBody() {
+            return delegate.getBody();
+        }
+
+        @Override
+        public void onSubscribe(Flow.Subscription subscription) {
+            this.subscription = subscription;
+            delegate.onSubscribe(subscription);
+        }
+
+        @Override
+        public void onNext(List<ByteBuffer> buffers) {
+            for (ByteBuffer buffer : buffers) {
+                if (buffer.remaining() > maxBytes - received) {
+                    subscription.cancel();
+                    delegate.onError(new IOException("Pwned response exceeds limit"));
+                    return;
+                }
+                received += buffer.remaining();
+            }
+            delegate.onNext(buffers);
+        }
+
+        @Override
+        public void onError(Throwable error) {
+            delegate.onError(error);
+        }
+
+        @Override
+        public void onComplete() {
+            delegate.onComplete();
         }
     }
 }

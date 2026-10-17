@@ -19,6 +19,8 @@ class PwnedPasswordClientTest {
     private AtomicReference<String> paddingHeader;
     private volatile int status;
     private volatile long delayMillis;
+    private volatile long bodyDelayMillis;
+    private volatile int bodySize;
 
     @BeforeEach
     void startServer() throws IOException {
@@ -26,6 +28,8 @@ class PwnedPasswordClientTest {
         paddingHeader = new AtomicReference<>();
         status = 200;
         delayMillis = 0;
+        bodyDelayMillis = 0;
+        bodySize = 0;
         server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         server.createContext("/range/", exchange -> {
             requestPath.set(exchange.getRequestURI().getPath());
@@ -37,10 +41,18 @@ class PwnedPasswordClientTest {
                     Thread.currentThread().interrupt();
                 }
             }
-            byte[] body = ("0".repeat(35) + ":1\r\n")
+            byte[] body = bodySize > 0 ? new byte[bodySize]
+                    : ("0".repeat(35) + ":1\r\n")
                     .getBytes(StandardCharsets.US_ASCII);
             try {
                 exchange.sendResponseHeaders(status, body.length);
+                if (bodyDelayMillis > 0) {
+                    try {
+                        Thread.sleep(bodyDelayMillis);
+                    } catch (InterruptedException exception) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
                 exchange.getResponseBody().write(body);
             } catch (IOException ignored) {
                 // A timeout closes the client connection before this test server replies.
@@ -85,5 +97,22 @@ class PwnedPasswordClientTest {
                 () -> new PwnedPasswordClient("http://example.com", Duration.ofSeconds(1)));
         assertThrows(IllegalArgumentException.class,
                 () -> client(Duration.ofSeconds(1)).fetchRange("5BAA61E4"));
+    }
+
+    @Test
+    void timeoutAlsoCoversAStalledResponseBody() {
+        bodyDelayMillis = 700;
+        long started = System.nanoTime();
+        assertThrows(PwnedPasswordUnavailableException.class,
+                () -> client(Duration.ofMillis(100)).fetchRange("5BAA6"));
+        assertTrue(Duration.ofNanos(System.nanoTime() - started)
+                .compareTo(Duration.ofMillis(500)) < 0);
+    }
+
+    @Test
+    void oversizedBodyFailsWithoutAccumulatingTheWholeResponse() {
+        bodySize = 128 * 1024 + 1;
+        assertThrows(PwnedPasswordUnavailableException.class,
+                () -> client(Duration.ofSeconds(2)).fetchRange("5BAA6"));
     }
 }

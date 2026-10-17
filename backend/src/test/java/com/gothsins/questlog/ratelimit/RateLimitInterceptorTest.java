@@ -86,4 +86,20 @@ class RateLimitInterceptorTest {
                 5, Duration.ofMinutes(1));
         verifyNoMoreInteractions(service);
     }
+
+    @Test
+    void contextPathCannotBypassLoginLimit() throws Exception {
+        MockHttpServletRequest post = request("/questlog/api/auth/login");
+        post.setContextPath("/questlog");
+        post.addHeader("Forwarded", "for=203.0.113.4");
+        when(service.check("rate-limit:/api/auth/login:127.0.0.1",
+                5, Duration.ofMinutes(1)))
+                .thenReturn(RateLimitDecision.rejected(12));
+
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        assertFalse(interceptor.preHandle(post, response, new Object()));
+        assertEquals(429, response.getStatus());
+        verify(service).check("rate-limit:/api/auth/login:127.0.0.1",
+                5, Duration.ofMinutes(1));
+    }
 }

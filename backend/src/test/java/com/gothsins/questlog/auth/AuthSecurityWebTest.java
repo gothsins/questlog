@@ -2,6 +2,7 @@ package com.gothsins.questlog.auth;
 
 import com.gothsins.questlog.ratelimit.RateLimitDecision;
 import com.gothsins.questlog.ratelimit.RateLimitService;
+import com.gothsins.questlog.ratelimit.RateLimitUnavailableException;
 import com.gothsins.questlog.security.CustomUserDetailsService;
 import com.gothsins.questlog.security.JwtService;
 import com.gothsins.questlog.security.SecurityConfig;
@@ -57,13 +58,14 @@ class AuthSecurityWebTest {
     }
 
     @Test
-    void oversizedLoginInputIsRejectedBeforeAuthentication() throws Exception {
+    void legacyLongPasswordStillReachesAuthentication() throws Exception {
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"username\":\"gui\",\"password\":\""
                                 + "x".repeat(257) + "\"}"))
-                .andExpect(status().isBadRequest());
-        verifyNoInteractions(authService);
+                .andExpect(status().isOk());
+        verify(authService).login(argThat(request ->
+                request.password().length() == 257));
     }
 
     @Test
@@ -97,5 +99,33 @@ class AuthSecurityWebTest {
                 .andExpect(header().string("Access-Control-Expose-Headers", "Retry-After"))
                 .andExpect(jsonPath("$.status").value(429));
         verifyNoInteractions(authService);
+    }
+
+    @Test
+    void redisOutageBlocksLoginWith503BeforeAuthentication() throws Exception {
+        when(rateLimitService.check(anyString(), anyInt(), any()))
+                .thenThrow(new RateLimitUnavailableException());
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"gui\",\"password\":\"wrong\"}"))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(jsonPath("$.status").value(503));
+        verifyNoInteractions(authService);
+    }
+
+    @Test
+    void contextPathAndForwardedHeadersDoNotChangeTheBucketIdentity() throws Exception {
+        mockMvc.perform(post("/questlog/api/auth/login")
+                        .contextPath("/questlog")
+                        .with(request -> {
+                            request.setRemoteAddr("198.51.100.7");
+                            return request;
+                        })
+                        .header("X-Forwarded-For", "203.0.113.4")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"gui\",\"password\":\"wrong\"}"))
+                .andExpect(status().isOk());
+        verify(rateLimitService).check(eq("rate-limit:/api/auth/login:198.51.100.7"),
+                eq(5), any());
     }
 }
