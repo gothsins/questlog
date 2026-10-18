@@ -43,6 +43,12 @@ Pwned Passwords HTTP client is replaced by a deterministic test response; the
 password policy, local SHA-1 suffix comparison and fail-closed production
 configuration remain unchanged. IGDB and Steam are not contacted because the
 test inserts a local catalog game through the repository.
+The test reads the fresh `JWT_SECRET` supplied by the runner; it contains no
+JWT key in its final source. An earlier commit in this PR contained an obvious
+synthetic JWT test fixture that Gitleaks correctly flagged twice. The fixture
+was removed, and `.gitleaksignore` suppresses only that exact historical
+commit/file/rule/line fingerprint; the PR history is retained because force
+push is disallowed. The scanner remains active for every other finding.
 
 The existing GitHub Actions backend job already starts temporary PostgreSQL
 and Redis and runs `*IT`, so this journey joins the PR quality gate without a
