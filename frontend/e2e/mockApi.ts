@@ -45,6 +45,9 @@ export class MockApi {
     myReviewStatus: number | null = null
     reviewSaveStatus: number | null = null
     reviewDeleteStatus: number | null = null
+    profileStatus: number | null = null
+    profile = { id: 7, username: 'visual_user', nickname: null as string | null,
+        avatarUrl: null, createdAt: date }
 
     async install(context: BrowserContext) {
         await context.routeWebSocket(/.*/, async (socket) => {
@@ -89,8 +92,14 @@ export class MockApi {
                 this.registrationSucceeds ? 201 : 503)
             }
             if (call === 'GET /api/users/me') {
-                return json({ id: 7, username: 'visual_user', nickname: null,
-                    avatarUrl: null, createdAt: date })
+                return this.profileStatus
+                    ? json({ status: this.profileStatus }, this.profileStatus)
+                    : json(this.profile)
+            }
+            if (call === 'PATCH /api/users/me') {
+                const changes = request.postDataJSON() as { nickname: string }
+                this.profile = { ...this.profile, nickname: changes.nickname }
+                return json(this.profile)
             }
             if (call === 'GET /api/library') {
                 return this.libraryUnauthorized

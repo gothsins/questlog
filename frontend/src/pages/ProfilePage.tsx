@@ -24,7 +24,7 @@ function ProfilePage() {
     const queryClient = useQueryClient()
     const navigate = useNavigate()
 
-    const [nickname, setNickname] = useState('')
+    const [nicknameDraft, setNicknameDraft] = useState<string | null>(null)
     const [success, setSuccess] = useState('')
 
     const fileInputRef = useRef<HTMLInputElement>(null)
@@ -36,6 +36,7 @@ function ProfilePage() {
         data: profile,
         isPending,
         error,
+        refetch,
     } = useQuery({
         queryKey: ['my-profile'],
         queryFn: getMyProfile,
@@ -43,11 +44,15 @@ function ProfilePage() {
         retry: false,
     })
 
+    const nickname = nicknameDraft ?? profile?.nickname ?? ''
+
     useEffect(() => {
-        if (profile) {
-            setNickname(profile.nickname ?? '')
+        if (error instanceof Error && error.message === 'SESSION_EXPIRED') {
+            sessionStorage.removeItem('questlog_token')
+            queryClient.clear()
+            navigate('/login', { replace: true })
         }
-    }, [profile?.nickname])
+    }, [error, navigate, queryClient])
 
     const updateMutation = useMutation({
         mutationFn: updateMyProfile,
@@ -58,6 +63,7 @@ function ProfilePage() {
                 updatedProfile,
             )
 
+            setNicknameDraft(null)
             setSuccess('Apelido atualizado com sucesso!')
         },
 
@@ -192,9 +198,12 @@ function ProfilePage() {
 
     if (error || !profile) {
         return (
-            <p className="profile-state" role="alert">
-                Não foi possível carregar seu perfil.
-            </p>
+            <div className="profile-state" role="alert">
+                <p>Não foi possível carregar seu perfil.</p>
+                {!(error instanceof Error && error.message === 'SESSION_EXPIRED') && (
+                    <button type="button" onClick={() => void refetch()}>Tentar novamente</button>
+                )}
+            </div>
         )
     }
 
@@ -323,8 +332,8 @@ function ProfilePage() {
                     <h2>Identidade pública</h2>
 
                     <p>
-                        Este apelido aparecerá no seu perfil
-                        e nas suas futuras análises.
+                        Este apelido aparecerá no seu perfil.
+                        As análises exibem seu nome de usuário.
                     </p>
                 </div>
 
@@ -342,7 +351,7 @@ function ProfilePage() {
                             type="text"
                             value={nickname}
                             onChange={(event) => {
-                                setNickname(event.target.value)
+                                setNicknameDraft(event.target.value)
                                 setSuccess('')
                             }}
                             minLength={3}
