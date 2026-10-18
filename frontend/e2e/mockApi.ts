@@ -1,5 +1,7 @@
 import { expect, test as base, type BrowserContext, type Page } from '@playwright/test'
 import { FRONTEND_ORIGIN, MOCK_API_ORIGIN } from './network'
+import type { GameReview } from '../src/types/reviews'
+import type { LibraryEntry } from '../src/types/library'
 
 const date = '2026-01-01T00:00:00'
 
@@ -10,7 +12,7 @@ export const game = {
     coverUrl: null,
 }
 
-export const libraryEntry = {
+export const libraryEntry: LibraryEntry = {
     id: 1,
     gameId: 42,
     title: game.title,
@@ -31,12 +33,18 @@ const image = (color: string) =>
 export class MockApi {
     readonly calls: string[] = []
     readonly unexpected: string[] = []
-    entries: (typeof libraryEntry)[] = [{ ...libraryEntry }]
+    entries: LibraryEntry[] = [{ ...libraryEntry }]
     mediaFails = false
     gameFails = false
     libraryUnauthorized = false
     loginSucceeds = false
     registrationSucceeds = false
+    reviews: GameReview[] = []
+    myReview: GameReview | null = null
+    reviewListStatus: number | null = null
+    myReviewStatus: number | null = null
+    reviewSaveStatus: number | null = null
+    reviewDeleteStatus: number | null = null
 
     async install(context: BrowserContext) {
         await context.routeWebSocket(/.*/, async (socket) => {
@@ -89,9 +97,49 @@ export class MockApi {
                     ? json({ message: 'Authentication required', status: 401 }, 401)
                     : json(this.entries)
             }
+            if (call === 'GET /api/games/42/reviews') {
+                return this.reviewListStatus
+                    ? json({ status: this.reviewListStatus }, this.reviewListStatus)
+                    : json(this.reviews)
+            }
+            if (call === 'GET /api/library/1/review') {
+                if (this.myReviewStatus) return json({ status: this.myReviewStatus }, this.myReviewStatus)
+                return this.myReview
+                    ? json(this.myReview)
+                    : json({ status: 404 }, 404)
+            }
+            if (call === 'PUT /api/library/1/review') {
+                if (this.reviewSaveStatus) return json({ status: this.reviewSaveStatus }, this.reviewSaveStatus)
+                const body = request.postDataJSON() as { content: string }
+                const now = '2026-01-02T12:00:00'
+                this.myReview = {
+                    id: this.myReview?.id ?? 101,
+                    libraryEntryId: 1,
+                    gameId: 42,
+                    username: 'visual_user',
+                    content: body.content.trim(),
+                    rating: this.entries[0]?.rating ?? null,
+                    createdAt: this.myReview?.createdAt ?? now,
+                    updatedAt: now,
+                }
+                this.reviews = [this.myReview, ...this.reviews.filter((item) => item.id !== this.myReview?.id)]
+                return json(this.myReview)
+            }
+            if (call === 'DELETE /api/library/1/review') {
+                if (this.reviewDeleteStatus) return json({ status: this.reviewDeleteStatus }, this.reviewDeleteStatus)
+                this.reviews = this.reviews.filter((item) => item.id !== this.myReview?.id)
+                this.myReview = null
+                return route.fulfill({ status: 204 })
+            }
             if (call === 'PATCH /api/library/1') {
                 const changes = request.postDataJSON() as Partial<typeof libraryEntry>
                 this.entries[0] = { ...this.entries[0], ...changes }
+                if ('rating' in changes) {
+                    if (this.myReview) this.myReview = { ...this.myReview, rating: this.entries[0].rating }
+                    this.reviews = this.reviews.map((review) => review.libraryEntryId === 1
+                        ? { ...review, rating: this.entries[0].rating }
+                        : review)
+                }
                 return json(this.entries[0])
             }
             if (call === 'GET /api/games/search') {
