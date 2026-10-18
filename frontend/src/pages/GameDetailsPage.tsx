@@ -12,6 +12,7 @@ import SteamReviewsPanel from '../components/SteamReviewsPanel'
 import type { SteamReviews } from '../components/SteamReviewsPanel'
 import SteamWrittenReviewsPanel from '../components/SteamWrittenReviewsPanel'
 import type { SteamWrittenReviews } from '../components/SteamWrittenReviewsPanel'
+import GameReviewsSection from '../components/GameReviewsSection'
 import '../styles/game-details.css'
 
 interface GameDetails {
@@ -374,13 +375,7 @@ function GameDetailsPage() {
                 onRetry={() => void writtenQuery.refetch()}
             />
 
-            <section className="game-details__reviews">
-                <span className="game-details__eyebrow">
-                    COMUNIDADE QUESTLOG
-                </span>
-                <h2>Análises dos jogadores</h2>
-                <p>Em breve, as análises da comunidade aparecerão aqui.</p>
-            </section>
+            <GameReviewsSection key={game.id} gameId={game.id} />
         </main>
     )
 }
