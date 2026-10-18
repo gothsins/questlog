@@ -75,6 +75,54 @@ test('creates an analysis with the matching library entry and leaves the library
     expect(api.calls).not.toContain('PATCH /api/library/1')
 })
 
+test('confirmed create, edit and delete remain reflected in the feed when reconciliation fails', async ({ page, api }) => {
+    await openDetails(page)
+    await expect(page.getByText('Ainda não há análises para este jogo.')).toBeVisible()
+    api.reviewListStatus = 503
+
+    await page.getByRole('button', { name: 'Escrever análise' }).click()
+    await page.getByRole('textbox', { name: 'Sua análise' }).fill('Esta análise foi publicada com confirmação do servidor.')
+    await page.getByRole('button', { name: 'Publicar análise' }).click()
+    await expect(page.getByRole('status').filter({ hasText: 'Análise salva com sucesso.' })).toBeVisible()
+    await expect(page.locator('.quest-review-card')).toHaveCount(1)
+    await expect(page.locator('.quest-review-card')).toContainText('Esta análise foi publicada')
+
+    await page.getByRole('button', { name: 'Editar minha análise' }).click()
+    await page.getByLabel('Editar sua análise').fill('Esta análise foi editada e confirmada pelo servidor.')
+    await page.getByRole('button', { name: 'Salvar análise' }).click()
+    await expect(page.locator('.quest-review-card')).toHaveCount(1)
+    await expect(page.locator('.quest-review-card')).toContainText('Esta análise foi editada')
+
+    await page.getByRole('button', { name: 'Excluir minha análise' }).click()
+    await page.getByRole('dialog', { name: 'Excluir minha análise?' }).getByRole('button', { name: 'Excluir análise' }).click()
+    await expect(page.getByRole('status').filter({ hasText: 'Análise excluída com sucesso.' })).toBeVisible()
+    await expect(page.locator('.quest-review-card')).toHaveCount(0)
+    await expect(page.getByText('Ainda não há análises para este jogo.')).toBeVisible()
+    expect(api.calls.filter((call) => call === 'GET /api/games/42/reviews').length).toBeGreaterThan(1)
+})
+
+test('library rating save refreshes the game review feed on return to details', async ({ page, api }) => {
+    api.entries[0].rating = 7
+    api.myReview = { ...ownReview }
+    api.reviews = [{ ...ownReview }, communityReview]
+    await openDetails(page)
+    await expect(page.locator('.quest-review-card').filter({ hasText: 'visual_user' }).getByLabel('Nota 7 de 10')).toBeVisible()
+
+    await page.getByRole('link', { name: 'Biblioteca', exact: true }).click()
+    await expect(page).toHaveURL(/\/library$/)
+    await page.getByRole('button', { name: '★ Editar avaliação' }).click()
+    await page.getByRole('textbox', { name: 'Nota (0 a 10)' }).fill('9')
+    api.reviewListStatus = 503
+    await page.getByRole('button', { name: 'Salvar', exact: true }).click()
+    await expect(page.getByRole('status').filter({ hasText: 'Avaliação e horas salvas' })).toBeVisible()
+    await page.getByRole('link', { name: 'Elden Ring' }).click()
+    await expect(page).toHaveURL(/\/games\/42$/)
+    await expect(page.getByText('Sua nota:')).toContainText('9 / 10')
+    await expect(page.locator('.quest-review-card').filter({ hasText: 'visual_user' }).getByLabel('Nota 9 de 10')).toBeVisible()
+    await expect(page.locator('.quest-review-card')).toHaveCount(2)
+    expect(api.calls).toContain('PATCH /api/library/1')
+})
+
 test('edits own analysis through the authenticated endpoint without matching usernames', async ({ page, api }) => {
     api.myReview = { ...ownReview }
     api.reviews = [{ ...ownReview }, communityReview]
@@ -155,4 +203,22 @@ test('review layout has no mobile horizontal overflow', async ({ page, api }, te
     await openDetails(page)
     await expect(page.locator('.quest-review-card')).toBeVisible()
     expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1)).toBe(false)
+})
+
+test('cancelled review requests preserve AbortError for TanStack Query', async ({ page, api }) => {
+    await page.goto('/')
+    const errorName = await page.evaluate(async () => {
+        const modulePath = '/src/api/reviews.ts'
+        const { getGameReviews } = await import(/* @vite-ignore */ modulePath)
+        const controller = new AbortController()
+        controller.abort()
+        try {
+            await getGameReviews(42, controller.signal)
+            return 'unexpected success'
+        } catch (error) {
+            return error instanceof Error ? error.name : 'unexpected error'
+        }
+    })
+    expect(errorName).toBe('AbortError')
+    expect(api.calls).toEqual([])
 })

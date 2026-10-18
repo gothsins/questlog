@@ -16,6 +16,7 @@ import GameReviewCard from './GameReviewCard'
 import MyReviewEditor from './MyReviewEditor'
 import ReviewDeleteConfirmation from './ReviewDeleteConfirmation'
 import { reviewValidation } from './reviewPresentation'
+import { removeReview as removeReviewFromCache, upsertReview } from './reviewCache'
 import '../styles/game-reviews.css'
 
 export default function GameReviewsSection({ gameId }: { gameId: number }) {
@@ -69,8 +70,13 @@ export default function GameReviewsSection({ gameId }: { gameId: number }) {
 
     const saveMutation = useMutation({
         mutationFn: (content: string) => saveMyReview(entryId!, content),
-        onSuccess: (review) => {
-            queryClient.setQueryData(['my-review', entryId], review)
+        onSuccess: async (review) => {
+            await Promise.all([
+                queryClient.cancelQueries({ queryKey: ['game-reviews', gameId], exact: true }),
+                queryClient.cancelQueries({ queryKey: ['my-review', entryId], exact: true }),
+            ])
+            queryClient.setQueryData<GameReview | null>(['my-review', entryId], review)
+            queryClient.setQueryData<GameReview[]>(['game-reviews', gameId], (current) => upsertReview(current, review))
             void queryClient.invalidateQueries({ queryKey: ['game-reviews', gameId] })
             setEditorMode(null)
             setDraft(review.content)
@@ -85,8 +91,13 @@ export default function GameReviewsSection({ gameId }: { gameId: number }) {
     })
     const deleteMutation = useMutation({
         mutationFn: () => deleteMyReview(entryId!),
-        onSuccess: () => {
-            queryClient.setQueryData(['my-review', entryId], null)
+        onSuccess: async () => {
+            await Promise.all([
+                queryClient.cancelQueries({ queryKey: ['game-reviews', gameId], exact: true }),
+                queryClient.cancelQueries({ queryKey: ['my-review', entryId], exact: true }),
+            ])
+            queryClient.setQueryData<GameReview | null>(['my-review', entryId], null)
+            queryClient.setQueryData<GameReview[]>(['game-reviews', gameId], (current) => removeReviewFromCache(current, entryId!))
             void queryClient.invalidateQueries({ queryKey: ['game-reviews', gameId] })
             setConfirmDelete(false)
             setNotice('Análise excluída com sucesso. Sua nota permanece na biblioteca.')
@@ -143,17 +154,19 @@ export default function GameReviewsSection({ gameId }: { gameId: number }) {
                     {communityQuery.isPending && <div className="quest-reviews__state" role="status">Carregando análises...</div>}
                     {communityQuery.isError && (
                         <div className="quest-reviews__state" role="alert">
-                            <p>{reviewErrorMessage(communityQuery.error, 'load')}</p>
+                            <p>{communityQuery.data
+                                ? `Não foi possível atualizar as análises. ${reviewErrorMessage(communityQuery.error, 'load')}`
+                                : reviewErrorMessage(communityQuery.error, 'load')}</p>
                             <button type="button" onClick={() => void communityQuery.refetch()}>Tentar novamente</button>
                         </div>
                     )}
-                    {communityQuery.isSuccess && count === 0 && (
+                    {communityQuery.data && count === 0 && (
                         <div className="quest-reviews__state quest-reviews__state--empty">
                             <strong>Ainda não há análises para este jogo.</strong>
                             <p>Quando alguém compartilhar sua experiência, ela aparecerá aqui.</p>
                         </div>
                     )}
-                    {communityQuery.isSuccess && count! > 0 && (
+                    {communityQuery.data && count! > 0 && (
                         <ol className="quest-reviews__list" aria-label="Análises da comunidade">
                             {communityQuery.data.map((review) => <GameReviewCard key={review.id} review={review} />)}
                         </ol>

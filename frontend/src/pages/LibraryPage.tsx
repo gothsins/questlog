@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 
 import { authenticatedFetch } from '../api/client'
+import { syncReviewRating } from '../components/reviewCache'
 import type { LibraryEntry } from '../types/library'
+import type { GameReview } from '../types/reviews'
 import GameCard from '../components/GameCard'
 
 import '../styles/library.css'
@@ -115,6 +117,18 @@ function LibraryPage() {
                           )
                         : [updated],
             )
+
+            if ('rating' in changes) {
+                const reviewsKey = ['game-reviews', updated.gameId]
+                await queryClient.cancelQueries({ queryKey: reviewsKey, exact: true })
+                queryClient.setQueryData<GameReview[]>(reviewsKey, (current) =>
+                    syncReviewRating(current, updated.id, updated.rating),
+                )
+                queryClient.setQueryData<GameReview | null>(['my-review', updated.id], (current) =>
+                    current ? { ...current, rating: updated.rating } : current,
+                )
+                void queryClient.invalidateQueries({ queryKey: reviewsKey, exact: true })
+            }
 
             if ('rating' in changes || 'hoursPlayed' in changes) {
                 setSaveNotice('Avaliação e horas salvas com sucesso!')

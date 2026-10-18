@@ -134,6 +134,12 @@ export class MockApi {
             if (call === 'PATCH /api/library/1') {
                 const changes = request.postDataJSON() as Partial<typeof libraryEntry>
                 this.entries[0] = { ...this.entries[0], ...changes }
+                if ('rating' in changes) {
+                    if (this.myReview) this.myReview = { ...this.myReview, rating: this.entries[0].rating }
+                    this.reviews = this.reviews.map((review) => review.libraryEntryId === 1
+                        ? { ...review, rating: this.entries[0].rating }
+                        : review)
+                }
                 return json(this.entries[0])
             }
             if (call === 'GET /api/games/search') {

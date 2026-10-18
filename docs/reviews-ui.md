@@ -15,10 +15,14 @@ through `DELETE /api/library/{entryId}/review`. It checks the backend's 20
 trimmed-character minimum and 2,000 raw-character maximum, then sends the
 original draft. The backend remains responsible for canonical normalization
 and authorization. Failed saves keep the draft; failed deletes keep the
-published card. Successful mutations update the own-review cache and
-invalidate the community list. No additional rating mutation occurs. The
+published card. After the server confirms a mutation, the UI reconciles both
+the own-review and community caches by review ID or library entry ID, then
+invalidates the community query. Confirmed data remains visible with a retry
+control if that refetch fails. No additional rating mutation occurs. The
 displayed `rating` comes from `LibraryEntry.rating`, which can be changed in
-the existing library UI.
+the existing library UI. A successful library rating save updates any cached
+review for that entry and invalidates that game's community query; status and
+hours-only changes do not refetch reviews.
 
 The Questlog section is separate from Steam aggregates and written reviews.
 Review content is rendered as React text with CSS-preserved line breaks. The
@@ -33,3 +37,12 @@ for every review endpoint, including failures, and keep the Quality
 Engineering network block in place. No real user, database, Steam, IGDB, or
 production token is used. A future API version could add pagination and an
 explicit edit indicator without changing the ownership or rating model.
+
+The mobile login test retried in GitHub Actions run `39159797496`. That run
+did not retain a trace because the browser job succeeded on retry. A local
+20-repeat run without retries reproduced two failures. Its traces show that
+the test filled the registration page's username field during the route
+transition to login; the login username remained empty, so native required
+validation prevented the login POST. The test now waits for the login URL and
+its distinct heading before filling the form. No application login behavior
+or timeout was changed.

@@ -18,6 +18,7 @@ async function request(path: string, options: RequestInit = {}) {
         return response
     } catch (error) {
         if (error instanceof ReviewApiError) throw error
+        if (error instanceof Error && error.name === 'AbortError') throw error
         throw new ReviewApiError(null)
     }
 }
