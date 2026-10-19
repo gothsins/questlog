@@ -38,6 +38,7 @@ function LibraryPage() {
     const [sortOrder, setSortOrder] = useState<
         'recent' | 'oldest' | 'title'
     >('recent')
+    const [viewMode, setViewMode] = useState<'hybrid' | 'covers'>('hybrid')
 
     useEffect(() => {
         async function loadLibrary() {
@@ -207,9 +208,10 @@ function LibraryPage() {
     }
 
     return (
-        <section>
+        <section className="library-page">
             <header className="library-header">
                 <div>
+                    <span className="library-header__eyebrow">SUA COLEÇÃO</span>
                     <h1>Minha biblioteca</h1>
                     <p>Acompanhe sua jornada pelos jogos.</p>
                 </div>
@@ -291,6 +293,26 @@ function LibraryPage() {
                             <option value="title">Nome (A–Z)</option>
                         </select>
                     </div>
+
+                    <fieldset className="library-view-switch">
+                        <legend>Visualização</legend>
+                        <div className="library-view-switch__options">
+                            <button
+                                type="button"
+                                aria-pressed={viewMode === 'hybrid'}
+                                onClick={() => setViewMode('hybrid')}
+                            >
+                                Híbrido
+                            </button>
+                            <button
+                                type="button"
+                                aria-pressed={viewMode === 'covers'}
+                                onClick={() => setViewMode('covers')}
+                            >
+                                Capas
+                            </button>
+                        </div>
+                    </fieldset>
                 </div>
             )}
 
@@ -325,11 +347,20 @@ function LibraryPage() {
             )}
 
             {!error && filteredGames.length > 0 && (
-                <div className="library-grid">
+                <div className="library-results" role="status">
+                    {filteredGames.length === 1
+                        ? '1 jogo na coleção'
+                        : `${filteredGames.length} jogos na coleção`}
+                </div>
+            )}
+
+            {!error && filteredGames.length > 0 && (
+                <div className={`library-grid library-grid--${viewMode}`}>
                     {filteredGames.map((game) => (
                         <GameCard
                             key={game.id}
                             game={game}
+                            viewMode={viewMode}
                             isSaving={pendingUpdate?.id === game.id}
                             disabled={pendingUpdate !== null}
                             pendingStatus={
