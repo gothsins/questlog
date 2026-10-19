@@ -37,7 +37,6 @@ public class GameMediaService {
                         )
                 );
 
-        // Jogos cadastrados manualmente podem não ter IGDB ID.
         if (game.getIgdbId() == null) {
             return GameMediaResponse.empty();
         }
