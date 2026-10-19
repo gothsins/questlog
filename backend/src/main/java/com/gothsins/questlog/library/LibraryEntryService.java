@@ -52,7 +52,7 @@ public class LibraryEntryService {
 
         entry.setUser(user);
         entry.setGame(game);
-        entry.setStatus(GameStatus.BACKLOG);
+        entry.setStatus(GameStatus.WISHLIST);
 
         LibraryEntry savedEntry =
                 libraryEntryRepository.save(entry);

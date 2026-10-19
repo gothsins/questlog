@@ -135,11 +135,6 @@
     letter-spacing: 0.05em;
 }
 
-.status-badge--backlog {
-    color: #d4d4d8;
-    background: rgba(161, 161, 170, 0.12);
-}
-
 .status-badge--playing {
     color: #c4b5fd;
     background: rgba(139, 92, 246, 0.15);

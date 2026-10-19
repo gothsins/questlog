@@ -45,7 +45,7 @@ management:
 info:
   app:
     name: Questlog API
-    description: Game backlog and personal library API
+    description: Personal game library API
     version: 1.0.0
 
 security:

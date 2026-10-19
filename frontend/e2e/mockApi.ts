@@ -17,7 +17,7 @@ export const libraryEntry: LibraryEntry = {
     gameId: 42,
     title: game.title,
     coverUrl: null,
-    status: 'BACKLOG',
+    status: 'WISHLIST',
     rating: null,
     hoursPlayed: 0,
     createdAt: date,
@@ -32,6 +32,7 @@ const image = (color: string) =>
 
 export class MockApi {
     readonly calls: string[] = []
+    readonly libraryPatches: Partial<LibraryEntry>[] = []
     readonly unexpected: string[] = []
     entries: LibraryEntry[] = [{ ...libraryEntry }]
     mediaFails = false
@@ -142,6 +143,7 @@ export class MockApi {
             }
             if (call === 'PATCH /api/library/1') {
                 const changes = request.postDataJSON() as Partial<typeof libraryEntry>
+                this.libraryPatches.push(changes)
                 this.entries[0] = { ...this.entries[0], ...changes }
                 if ('rating' in changes) {
                     if (this.myReview) this.myReview = { ...this.myReview, rating: this.entries[0].rating }

@@ -371,11 +371,6 @@
     background: rgba(34, 197, 94, 0.12);
 }
 
-.landing__status--backlog {
-    color: #cbd5e1;
-    background: rgba(148, 163, 184, 0.12);
-}
-
 .landing__preview-footer {
     padding: 13px 20px;
     border-top: 1px solid #302a3a;

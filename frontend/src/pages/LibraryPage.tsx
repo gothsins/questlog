@@ -267,11 +267,10 @@ function LibraryPage() {
                             }
                         >
                             <option value="ALL">Todos os estados</option>
-                            <option value="BACKLOG">Backlog</option>
+                            <option value="WISHLIST">Quero jogar</option>
                             <option value="PLAYING">Jogando</option>
                             <option value="COMPLETED">Concluídos</option>
                             <option value="DROPPED">Abandonados</option>
-                            <option value="WISHLIST">Lista de desejos</option>
                         </select>
                     </div>
 

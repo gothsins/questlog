@@ -19,11 +19,10 @@ interface GameCardProps {
 }
 
 const statusLabels: Record<LibraryEntry['status'], string> = {
-    BACKLOG: 'Backlog',
+    WISHLIST: 'Quero jogar',
     PLAYING: 'Jogando',
     COMPLETED: 'Concluído',
     DROPPED: 'Abandonado',
-    WISHLIST: 'Lista de desejos',
 }
 
 const numberFormatter = new Intl.NumberFormat('pt-BR', {

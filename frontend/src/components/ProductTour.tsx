@@ -219,7 +219,7 @@ function DemoLibrary({ step }: { step: TourStep }) {
                 <span
                     className={`tour__status ${step.playing ? 'tour__status--playing' : ''}`}
                 >
-                    {step.playing ? 'Jogando' : 'Backlog'}
+                    {step.playing ? 'Jogando' : 'Quero jogar'}
                 </span>
             </div>
             {step.selected && (
@@ -232,12 +232,12 @@ function DemoLibrary({ step }: { step: TourStep }) {
                         className="tour__status-field"
                         data-tour-target="status"
                     >
-                        <span>{step.playing ? 'Jogando' : 'Backlog'}</span>
+                        <span>{step.playing ? 'Jogando' : 'Quero jogar'}</span>
                         <b>⌄</b>
                     </div>
                     {step.statusOpen && (
                         <div className="tour__status-menu">
-                            <span>Backlog</span>
+                            <span>Quero jogar</span>
                             <strong>
                                 Jogando <span>✓</span>
                             </strong>
