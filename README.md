@@ -56,6 +56,8 @@ Supported operations:
 
 Security hardening decisions and deployment settings are documented in
 [Security Hardening 2.0](docs/security-hardening.md).
+The milestone's integration checks, findings and readiness decision are in
+[Milestone stabilization and readiness](docs/milestone-readiness.md).
 
 - JWT authentication
 - Rate limiting with Bucket4j + Redis

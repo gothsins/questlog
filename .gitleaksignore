@@ -1,0 +1,3 @@
+# Historical synthetic JWT fixture in bf452e7; removed from the test source.
+# Ignore only this exact scanner fingerprint because published commits cannot be rewritten.
+bf452e7f103201eab5a9dc02a6b9f2d10cd1ff95:backend/src/test/java/com/gothsins/questlog/integration/PlayerJourneyIT.java:generic-api-key:27

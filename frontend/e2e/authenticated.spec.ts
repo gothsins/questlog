@@ -22,6 +22,34 @@ test('expired mocked session redirects and clears access', async ({ page, api })
     expect(token).toBeNull()
 })
 
+test('profile protects access, retries a failed load and keeps the saved nickname', async ({ page, api }) => {
+    await page.goto('/profile')
+    await expect(page).toHaveURL(/\/login$/)
+    expect(api.calls).toEqual([])
+
+    await useVisualSession(page)
+    api.profileStatus = 503
+    await page.goto('/profile')
+    await expect(page.getByRole('alert')).toContainText('Não foi possível carregar seu perfil.')
+    api.profileStatus = null
+    await page.getByRole('button', { name: 'Tentar novamente' }).click()
+    await expect(page.getByRole('heading', { name: 'Meu perfil' })).toBeVisible()
+    await page.getByRole('textbox', { name: 'Apelido' }).fill('visual_nick')
+    await page.getByRole('button', { name: 'Salvar alterações' }).click()
+    await expect(page.getByRole('status')).toContainText('Apelido atualizado com sucesso!')
+    await expect(page.getByRole('textbox', { name: 'Apelido' })).toHaveValue('visual_nick')
+    await expect(page.getByRole('button', { name: 'Salvar alterações' })).toBeDisabled()
+    expect(api.calls).toContain('PATCH /api/users/me')
+})
+
+test('expired profile session redirects and removes the token', async ({ page, api }) => {
+    await useVisualSession(page)
+    api.profileStatus = 401
+    await page.goto('/profile')
+    await expect(page).toHaveURL(/\/login$/)
+    expect(await page.evaluate(() => sessionStorage.getItem('questlog_token'))).toBeNull()
+})
+
 test('explore search and library import use only local fixtures', async ({ page, api }) => {
     api.entries = []
     await useVisualSession(page)
