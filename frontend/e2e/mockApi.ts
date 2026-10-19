@@ -38,6 +38,7 @@ export class MockApi {
     mediaFails = false
     gameFails = false
     libraryUnauthorized = false
+    libraryPatchStatus: number | null = null
     loginSucceeds = false
     registrationSucceeds = false
     reviews: GameReview[] = []
@@ -141,17 +142,25 @@ export class MockApi {
                 this.myReview = null
                 return route.fulfill({ status: 204 })
             }
-            if (call === 'PATCH /api/library/1') {
+            const libraryPatch = /^PATCH \/api\/library\/(\d+)$/.exec(call)
+            if (libraryPatch) {
                 const changes = request.postDataJSON() as Partial<typeof libraryEntry>
                 this.libraryPatches.push(changes)
-                this.entries[0] = { ...this.entries[0], ...changes }
+                if (this.libraryPatchStatus) {
+                    return json({ status: this.libraryPatchStatus }, this.libraryPatchStatus)
+                }
+                const index = this.entries.findIndex((entry) => entry.id === Number(libraryPatch[1]))
+                if (index < 0) return json({ status: 404 }, 404)
+                this.entries[index] = { ...this.entries[index], ...changes }
                 if ('rating' in changes) {
-                    if (this.myReview) this.myReview = { ...this.myReview, rating: this.entries[0].rating }
-                    this.reviews = this.reviews.map((review) => review.libraryEntryId === 1
-                        ? { ...review, rating: this.entries[0].rating }
+                    if (this.myReview?.libraryEntryId === this.entries[index].id) {
+                        this.myReview = { ...this.myReview, rating: this.entries[index].rating }
+                    }
+                    this.reviews = this.reviews.map((review) => review.libraryEntryId === this.entries[index].id
+                        ? { ...review, rating: this.entries[index].rating }
                         : review)
                 }
-                return json(this.entries[0])
+                return json(this.entries[index])
             }
             if (call === 'GET /api/games/search') {
                 return json([{ igdbId: 99, title: game.title,
