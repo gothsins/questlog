@@ -174,3 +174,73 @@
         display: none;
     }
 }
+
+.app-profile-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    margin-left: 8px;
+    padding: 5px 10px;
+
+    border-radius: 10px;
+
+    color: #e4e4e7;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+
+    transition: background 0.2s ease;
+}
+
+.app-profile-link:hover {
+    background: var(--surface-hover);
+}
+
+.app-profile-avatar {
+    display: grid;
+    place-items: center;
+
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+
+    border: 1px solid #a78bfa;
+    border-radius: 50%;
+
+    background: #3b245c;
+    color: #f4f4f5;
+    font-weight: 800;
+}
+
+@media (max-width: 640px) {
+    .app-profile-name {
+        display: none;
+    }
+
+    .app-navigation {
+        gap: 2px;
+    }
+
+    .app-profile-link {
+        margin-left: 0;
+        padding: 5px;
+    }
+
+    .nav-link,
+    .logout-button {
+        padding: 8px;
+        font-size: 12px;
+    }
+}
+
+.app-profile-avatar {
+    overflow: hidden;
+}
+
+.app-profile-avatar img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}

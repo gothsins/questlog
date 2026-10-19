@@ -1,3 +1,4 @@
+
 import { API_URL } from './config'
 
 export async function authenticatedFetch(
@@ -6,12 +7,20 @@ export async function authenticatedFetch(
 ) {
     const token = sessionStorage.getItem('questlog_token')
 
+    const headers = new Headers(options.headers)
+
+    if (token) {
+        headers.set('Authorization', `Bearer ${token}`)
+    }
+
+    if (options.body instanceof FormData) {
+        headers.delete('Content-Type')
+    } else if (options.body && !headers.has('Content-Type')) {
+        headers.set('Content-Type', 'application/json')
+    }
+
     return fetch(`${API_URL}${path}`, {
         ...options,
-        headers: {
-            ...options.headers,
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-        },
+        headers,
     })
 }

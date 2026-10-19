@@ -544,3 +544,19 @@
     font-size: 13px;
     font-weight: 600;
 }
+
+.game-card__details-link {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.game-card__details-link:hover {
+    color: #a78bfa;
+}
+
+.game-card__details-link:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+    border-radius: 3px;
+}

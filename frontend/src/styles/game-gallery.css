@@ -1,0 +1,216 @@
+.game-gallery {
+    margin-top: 52px;
+    min-width: 0;
+}
+.game-gallery__heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+.game-gallery__heading h2 {
+    margin: 8px 0 0;
+    font-size: clamp(23px, 3vw, 30px);
+    letter-spacing: -0.04em;
+}
+.game-gallery__count {
+    color: #c4b5fd;
+    font-size: 13px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+.game-gallery__frame {
+    position: relative;
+    max-width: 900px;
+}
+.game-gallery__featured {
+    position: relative;
+    display: block;
+    width: 100%;
+    padding: 0;
+    overflow: hidden;
+    aspect-ratio: 16 / 9;
+    border: 1px solid #3b304b;
+    border-radius: 18px;
+    background: #151219;
+    color: white;
+    cursor: zoom-in;
+}
+.game-gallery__featured img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.game-gallery__featured span {
+    position: absolute;
+    right: 18px;
+    bottom: 18px;
+    padding: 9px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 8px;
+    background: rgba(16, 13, 21, 0.85);
+    font-size: 12px;
+    font-weight: 700;
+}
+.game-gallery__navigation {
+    position: absolute;
+    right: 16px;
+    top: 16px;
+    display: flex;
+    gap: 8px;
+}
+.game-gallery__navigation button,
+.game-gallery__dialog-stage button {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    background: rgba(19, 16, 25, 0.86);
+    color: #fff;
+    font-size: 21px;
+    cursor: pointer;
+}
+.game-gallery__navigation button:hover,
+.game-gallery__dialog-stage button:hover {
+    background: #6d28d9;
+}
+.game-gallery__rail {
+    display: flex;
+    max-width: 900px;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 12px 2px 4px;
+    scrollbar-color: #604986 transparent;
+}
+.game-gallery__thumb {
+    width: clamp(94px, 16vw, 150px);
+    flex: 0 0 auto;
+    overflow: hidden;
+    padding: 0;
+    aspect-ratio: 16 / 9;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    background: #18141f;
+    opacity: 0.7;
+    cursor: pointer;
+    transition:
+        opacity 0.2s,
+        border-color 0.2s;
+}
+.game-gallery__thumb--active {
+    border-color: #a78bfa;
+    opacity: 1;
+}
+.game-gallery__thumb:hover {
+    opacity: 1;
+}
+.game-gallery__thumb img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.game-gallery__dialog {
+    width: min(1160px, 96vw);
+    max-height: 94dvh;
+    margin: auto;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid #40344d;
+    border-radius: 16px;
+    background: #111016;
+    color: #fff;
+    box-shadow: 0 30px 100px rgba(0, 0, 0, 0.7);
+}
+.game-gallery__dialog::backdrop {
+    background: rgba(0, 0, 0, 0.88);
+}
+.game-gallery__dialog-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 18px;
+    border-bottom: 1px solid #332b3c;
+    color: #c4b5fd;
+    font-size: 13px;
+    font-weight: 700;
+}
+.game-gallery__dialog-bar > div {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.game-gallery__dialog-bar a {
+    color: #ddd6fe;
+}
+.game-gallery__dialog-bar button {
+    border: 0;
+    background: transparent;
+    color: #fff;
+    font-size: 22px;
+    cursor: pointer;
+}
+.game-gallery__dialog-stage {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-height: 200px;
+    padding: 12px;
+    touch-action: pan-y;
+}
+.game-gallery__dialog-stage img {
+    display: block;
+    min-width: 0;
+    max-width: calc(100% - 110px);
+    max-height: calc(94dvh - 92px);
+    object-fit: contain;
+}
+.game-gallery__dialog-stage button {
+    flex: 0 0 42px;
+}
+.game-gallery__featured:focus-visible,
+.game-gallery__navigation button:focus-visible,
+.game-gallery__thumb:focus-visible,
+.game-gallery__dialog button:focus-visible,
+.game-gallery__dialog a:focus-visible,
+.game-details button:focus-visible,
+.game-details a:focus-visible {
+    outline: 2px solid #c4b5fd;
+    outline-offset: 3px;
+}
+@media (max-width: 600px) {
+    .game-gallery__featured {
+        aspect-ratio: 4 / 3;
+    }
+    .game-gallery__featured span {
+        right: 10px;
+        bottom: 10px;
+    }
+    .game-gallery__navigation {
+        right: 10px;
+        top: 10px;
+    }
+    .game-gallery__dialog-stage {
+        gap: 4px;
+        padding: 8px;
+    }
+    .game-gallery__dialog-stage img {
+        max-width: calc(100% - 84px);
+    }
+    .game-gallery__dialog-stage button {
+        width: 36px;
+        height: 36px;
+        flex-basis: 36px;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .game-gallery__thumb {
+        transition: none;
+    }
+}

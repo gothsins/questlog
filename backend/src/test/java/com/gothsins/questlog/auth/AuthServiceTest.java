@@ -42,6 +42,12 @@ class AuthServiceTest {
     @Mock
     private JwtService jwtService;
 
+    @Mock
+    private PasswordPolicy passwordPolicy;
+
+    @Mock
+    private PwnedPasswordService pwnedPasswordService;
+
     @Test
     void shouldRegisterUserWithEncodedPassword() {
 
@@ -89,6 +95,8 @@ class AuthServiceTest {
 
         verify(passwordEncoder)
                 .encode(request.password());
+        verify(passwordPolicy).validate(request.password());
+        verify(pwnedPasswordService).isCompromised(request.password());
     }
 
     @Test
@@ -118,6 +126,33 @@ class AuthServiceTest {
 
         verify(userRepository, never())
                 .save(any(User.class));
+        verifyNoInteractions(pwnedPasswordService);
+    }
+
+    @Test
+    void shouldRejectBreachedPasswordBeforeEncodingOrSaving() {
+        RegisterRequest request = new RegisterRequest("gui", "senha longa e segura");
+        when(pwnedPasswordService.isCompromised(request.password()))
+                .thenReturn(true);
+
+        assertThrows(PasswordRejectedException.class,
+                () -> authService.register(request));
+
+        verify(passwordEncoder, never()).encode(anyString());
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void shouldFailClosedWhenPasswordCheckIsUnavailable() {
+        RegisterRequest request = new RegisterRequest("gui", "senha longa e segura");
+        when(pwnedPasswordService.isCompromised(request.password()))
+                .thenThrow(new PwnedPasswordUnavailableException());
+
+        assertThrows(PwnedPasswordUnavailableException.class,
+                () -> authService.register(request));
+
+        verify(passwordEncoder, never()).encode(anyString());
+        verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
@@ -153,6 +188,7 @@ class AuthServiceTest {
 
         verify(jwtService)
                 .generateToken(request.username());
+        verifyNoInteractions(passwordPolicy, pwnedPasswordService);
     }
 
     @Test

@@ -12,6 +12,10 @@ import org.springframework.data.redis.serializer.JacksonJsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import tools.jackson.databind.JavaType;
 import tools.jackson.databind.json.JsonMapper;
+import com.gothsins.questlog.game.dto.GameMediaResponse;
+import com.gothsins.questlog.game.dto.SteamLinkResponse;
+import com.gothsins.questlog.steam.dto.SteamReviewsResponse;
+import com.gothsins.questlog.steam.dto.SteamWrittenReviewsResponse;
 
 import java.time.Duration;
 import java.util.List;
@@ -66,6 +70,54 @@ public class RedisConfig {
                                 )
                 );
 
+        RedisCacheConfiguration steamLinksConfig = defaultConfig
+                .entryTtl(Duration.ofHours(12))
+                .serializeValuesWith(
+                        RedisSerializationContext.SerializationPair
+                                .fromSerializer(
+                                        new JacksonJsonRedisSerializer<>(
+                                                jsonMapper,
+                                                SteamLinkResponse.class
+                                        )
+                                )
+                );
+
+        RedisCacheConfiguration steamReviewTextsConfig = defaultConfig
+                .entryTtl(Duration.ofMinutes(10))
+                .serializeValuesWith(
+                        RedisSerializationContext.SerializationPair
+                                .fromSerializer(
+                                        new JacksonJsonRedisSerializer<>(
+                                                jsonMapper,
+                                                SteamWrittenReviewsResponse.class
+                                        )
+                                )
+                );
+
+        RedisCacheConfiguration gameMediaConfig = defaultConfig
+                .entryTtl(Duration.ofHours(6))
+                .serializeValuesWith(
+                        RedisSerializationContext.SerializationPair
+                                .fromSerializer(
+                                        new JacksonJsonRedisSerializer<>(
+                                                jsonMapper,
+                                                GameMediaResponse.class
+                                        )
+                                )
+                );
+
+        RedisCacheConfiguration steamReviewsConfig = defaultConfig
+                .entryTtl(Duration.ofMinutes(15))
+                .serializeValuesWith(
+                        RedisSerializationContext.SerializationPair
+                                .fromSerializer(
+                                        new JacksonJsonRedisSerializer<>(
+                                                jsonMapper,
+                                                SteamReviewsResponse.class
+                                        )
+                                )
+                );
+
         RedisCacheConfiguration gamesConfig = defaultConfig
                 .serializeValuesWith(
                         RedisSerializationContext.SerializationPair
@@ -84,7 +136,11 @@ public class RedisConfig {
                         Map.of(
                                 "igdbSearch", igdbConfig,
                                 "gamesList", gamesListConfig,
-                                "games", gamesConfig
+                                "games", gamesConfig,
+                                "gameMedia", gameMediaConfig,
+                                "steamLinks", steamLinksConfig,
+                                "steamReviews", steamReviewsConfig,
+                                "steamReviewTexts", steamReviewTextsConfig
                         )
                 )
                 .disableCreateOnMissingCache()

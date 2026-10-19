@@ -54,6 +54,11 @@ Supported operations:
 
 ### API Protection
 
+Security hardening decisions and deployment settings are documented in
+[Security Hardening 2.0](docs/security-hardening.md).
+The milestone's integration checks, findings and readiness decision are in
+[Milestone stabilization and readiness](docs/milestone-readiness.md).
+
 - JWT authentication
 - Rate limiting with Bucket4j + Redis
 - Database constraints for data integrity
@@ -478,6 +483,33 @@ From `frontend/`:
 ```bash
 npm run build
 ```
+
+### Pull request CI
+
+`.github/workflows/ci.yml` runs three independent jobs for pull requests targeting
+`feat/game-reviews` or `main`. It also runs on pushes to `main` and can be
+started manually. The frontend job uses Node 24 and runs `npm ci`, build, lint,
+and the existing tests. The backend job uses Java 21 and runs Maven's `*Test`
+and `*IT` classes, including `GameReviewRepositoryIT`, which the default
+Surefire selection would skip. A failing command fails its job and PR check.
+
+The backend job creates fresh PostgreSQL and Redis service containers on a
+GitHub-hosted runner. Ports are assigned for that job, and the test database is
+named `questlog_ci`. PostgreSQL uses trust authentication only inside this
+disposable runner, so CI needs no database password. The JWT signing key is
+generated in memory for each run; IGDB values are inert test placeholders. CI
+does not read local `.env` files or repository secrets. The workflow token has
+read-only repository access, and checkout does not retain its credentials. The
+browser job runs Chromium against the frontend with local API fixtures; no
+backend or external game service is contacted.
+
+CodeQL and secret scanning run in separate workflows. The frontend CI job
+also reports npm dependency advisories without blocking the PR.
+See [quality engineering](docs/quality-engineering.md) for local commands,
+failure criteria, scope, and limitations. CI does not deploy the application.
+GitHub branch protection must separately mark the desired jobs as required
+checks if merges should be blocked when they fail. Fork pull requests may
+require approval under the repository's GitHub Actions policy before jobs start.
 
 ---
 

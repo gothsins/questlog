@@ -1,0 +1,62 @@
+name: CodeQL security
+
+on:
+  pull_request:
+    branches: [feat/game-reviews, main]
+  push:
+    branches: [feat/game-reviews, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: codeql-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: CodeQL ${{ matrix.language }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: java-kotlin
+            build-mode: manual
+          - language: javascript-typescript
+            build-mode: none
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: Set up Java 21
+        if: matrix.language == 'java-kotlin'
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@c23de5a82f64bb08c6d9f28844551440ca298e76 # v4.38.1
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+          queries: security-extended
+
+      - name: Build Java sources for extraction
+        if: matrix.language == 'java-kotlin'
+        working-directory: backend
+        run: bash ./mvnw -B -ntp -Dmaven.test.skip=true compile
+
+      - name: Analyze and upload security findings
+        uses: github/codeql-action/analyze@c23de5a82f64bb08c6d9f28844551440ca298e76 # v4.38.1
+        with:
+          category: /language:${{ matrix.language }}

@@ -1,56 +1,37 @@
-import {
-    Navigate,
-    Route,
-    Routes,
-} from 'react-router-dom'
+import { lazy, Suspense } from 'react'
+import { Navigate, Route, Routes } from 'react-router-dom'
 
-import LoginPage from './pages/LoginPage'
-import LibraryPage from './pages/LibraryPage'
 import ProtectedRoute from './routes/ProtectedRoute'
-import AuthenticatedLayout from './layouts/AuthenticatedLayout'
-import ExplorePage from './pages/ExplorePage'
+
+const RegisterPage = lazy(() => import('./pages/RegisterPage'))
+const LandingPage = lazy(() => import('./pages/LandingPage'))
+const LoginPage = lazy(() => import('./pages/LoginPage'))
+const LibraryPage = lazy(() => import('./pages/LibraryPage'))
+const AuthenticatedLayout = lazy(() => import('./layouts/AuthenticatedLayout'))
+const ExplorePage = lazy(() => import('./pages/ExplorePage'))
+const GameDetailsPage = lazy(() => import('./pages/GameDetailsPage'))
+const ProfilePage = lazy(() => import('./pages/ProfilePage'))
 
 function App() {
     return (
-        <Routes>
-            <Route
-                path="/login"
-                element={<LoginPage />}
-            />
+        <Suspense fallback={<div role="status" className="route-loading">Carregando página...</div>}>
+            <Routes>
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
 
-            <Route element={<ProtectedRoute />}>
-                <Route element={<AuthenticatedLayout />}>
-                    <Route
-                        path="/library"
-                        element={<LibraryPage />}
-                    />
-                    <Route
-                        path="/explore"
-                        element={<ExplorePage />}
-                    />
+                <Route element={<ProtectedRoute />}>
+                    <Route element={<AuthenticatedLayout />}>
+                        <Route path="/library" element={<LibraryPage />} />
+                        <Route path="/explore" element={<ExplorePage />} />
+                    </Route>
+                    <Route path="/games/:gameId" element={<GameDetailsPage />} />
+                    <Route path="/profile" element={<ProfilePage />} />
                 </Route>
-            </Route>
 
-            <Route
-                path="/"
-                element={
-                    <Navigate
-                        to="/login"
-                        replace
-                    />
-                }
-            />
-
-            <Route
-                path="*"
-                element={
-                    <Navigate
-                        to="/"
-                        replace
-                    />
-                }
-            />
-        </Routes>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+        </Suspense>
     )
 }
 

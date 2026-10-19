@@ -1,4 +1,8 @@
 spring:
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 3MB
   data:
     redis:
       host: localhost
@@ -24,6 +28,7 @@ spring:
 
 server:
   port: 8080
+  forward-headers-strategy: none
 
 management:
   endpoints:
@@ -47,6 +52,14 @@ security:
   jwt:
     secret: ${JWT_SECRET}
     expiration: ${JWT_EXPIRATION:3600000}
+  pwned-passwords:
+    enabled: ${PWNED_PASSWORDS_ENABLED:true}
+    base-url: ${PWNED_PASSWORDS_BASE_URL:https://api.pwnedpasswords.com}
+    timeout: ${PWNED_PASSWORDS_TIMEOUT:2s}
+  rate-limit:
+    redis-timeout: ${RATE_LIMIT_REDIS_TIMEOUT:2s}
+  cors:
+    allowed-origins: ${QUESTLOG_CORS_ALLOWED_ORIGINS:http://localhost:5173}
 
 igdb:
   client-id: ${IGDB_CLIENT_ID}

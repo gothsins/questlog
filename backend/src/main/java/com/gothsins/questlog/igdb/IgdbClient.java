@@ -90,4 +90,79 @@ public class IgdbClient {
 
         return Optional.of(games.get(0));
     }
+
+
+    public Optional<IgdbGameDetailsResponse> findGameDetailsById(
+            Long igdbId
+    ) {
+
+        String body = """
+            fields
+                id,
+                name,
+                summary,
+                genres.name,
+                screenshots.image_id,
+                videos.name,
+                videos.video_id;
+            where id = %d;
+            limit 1;
+            """.formatted(igdbId);
+
+        List<IgdbGameDetailsResponse> games = restClient
+                .post()
+                .uri("/games")
+                .header(
+                        "Client-ID",
+                        properties.clientId()
+                )
+                .header(
+                        "Authorization",
+                        "Bearer " + twitchAuthService.getAccessToken()
+                )
+                .contentType(MediaType.TEXT_PLAIN)
+                .body(body)
+                .retrieve()
+                .body(
+                        new ParameterizedTypeReference<
+                                List<IgdbGameDetailsResponse>
+                                >() {}
+                );
+
+        if (games == null || games.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(games.getFirst());
+    }
+
+    public List<IgdbExternalGameResponse> findExternalGames(
+            Long igdbId
+    ) {
+        String body = """
+            fields uid,external_game_source.name;
+            where game = %d;
+            limit 100;
+            """.formatted(igdbId);
+
+        List<IgdbExternalGameResponse> results = restClient
+                .post()
+                .uri("/external_games")
+                .header("Client-ID", properties.clientId())
+                .header(
+                        "Authorization",
+                        "Bearer " + twitchAuthService.getAccessToken()
+                )
+                .contentType(MediaType.TEXT_PLAIN)
+                .body(body)
+                .retrieve()
+                .body(
+                        new ParameterizedTypeReference<
+                                List<IgdbExternalGameResponse>
+                                >() {}
+                );
+
+        return results == null ? List.of() : results;
+    }
+
 }

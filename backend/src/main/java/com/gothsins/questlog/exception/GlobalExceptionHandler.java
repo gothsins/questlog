@@ -1,20 +1,56 @@
 package com.gothsins.questlog.exception;
 
+import com.gothsins.questlog.auth.PasswordRejectedException;
+import com.gothsins.questlog.auth.PwnedPasswordUnavailableException;
+import com.gothsins.questlog.ratelimit.RateLimitUnavailableException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.dao.DataIntegrityViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.util.List;
 
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(PasswordRejectedException.class)
+    public ResponseEntity<ErrorResponse> handlePasswordRejected(
+            PasswordRejectedException exception
+    ) {
+        return ResponseEntity.badRequest().body(new ErrorResponse(
+                exception.getMessage(), HttpStatus.BAD_REQUEST.value()
+        ));
+    }
+
+    @ExceptionHandler({PwnedPasswordUnavailableException.class,
+            RateLimitUnavailableException.class})
+    public ResponseEntity<ErrorResponse> handleSecurityDependencyUnavailable(
+            RuntimeException exception
+    ) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(new ErrorResponse(
+                        exception.getMessage(),
+                        HttpStatus.SERVICE_UNAVAILABLE.value()
+                ));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDenied(
+            AccessDeniedException exception
+    ) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new ErrorResponse(
+                        "Access denied", HttpStatus.FORBIDDEN.value()
+                ));
+    }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(
@@ -156,6 +192,42 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(
                         "HTTP method not allowed",
                         HttpStatus.METHOD_NOT_ALLOWED.value()
+                ));
+    }
+
+    @ExceptionHandler(NicknameAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleNicknameConflict(
+            NicknameAlreadyExistsException ex
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse(
+                        ex.getMessage(),
+                        HttpStatus.CONFLICT.value()
+                ));
+    }
+
+    @ExceptionHandler(AvatarValidationException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidAvatar(
+            AvatarValidationException ex
+    ) {
+        return ResponseEntity
+                .badRequest()
+                .body(new ErrorResponse(
+                        ex.getMessage(),
+                        HttpStatus.BAD_REQUEST.value()
+                ));
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ErrorResponse> handleOversizedUpload(
+            MaxUploadSizeExceededException ex
+    ) {
+        return ResponseEntity
+                .status(413)
+                .body(new ErrorResponse(
+                        "Image upload exceeds the allowed size",
+                        413
                 ));
     }
 }
