@@ -61,6 +61,7 @@ public class PwnedPasswordService {
 
     private String sha1Hex(String password) {
         try {
+            // HIBP range lookups require a SHA-1 prefix; BCrypt still stores the password.
             byte[] digest = MessageDigest.getInstance("SHA-1")
                     .digest(password.getBytes(StandardCharsets.UTF_8));
             return HexFormat.of().withUpperCase().formatHex(digest);
