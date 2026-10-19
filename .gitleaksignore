@@ -1,3 +1,7 @@
 # Historical synthetic JWT fixture in bf452e7; removed from the test source.
 # Ignore only this exact scanner fingerprint because published commits cannot be rewritten.
 bf452e7f103201eab5a9dc02a6b9f2d10cd1ff95:backend/src/test/java/com/gothsins/questlog/integration/PlayerJourneyIT.java:generic-api-key:27
+# Deterministic JWT test fixture in two historical integration-test commits.
+# Each fingerprint covers both the literal and its Base64-decoded finding.
+df9d76d9fb7623b16195df7f47997b6df66f4c17:backend/src/test/java/com/gothsins/questlog/ratelimit/RateLimitRedisIT.java:generic-api-key:19
+ce2e59def18c38e356aae7884a1de7cd1055bf50:backend/src/test/java/com/gothsins/questlog/review/GameReviewRepositoryIT.java:generic-api-key:28
