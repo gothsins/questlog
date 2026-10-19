@@ -13,6 +13,33 @@ test('mocked login opens library and can update a game status', async ({ page, a
     expect(api.calls).toContain('PATCH /api/library/1')
 })
 
+test('library offers exactly four statuses and filters Quero jogar', async ({ page, api }) => {
+    await useVisualSession(page)
+    await page.goto('/library')
+
+    const status = page.getByLabel('Estado do jogo')
+    const filter = page.getByLabel('Estado', { exact: true })
+    await expect(status).toHaveValue('WISHLIST')
+    await expect(page.locator('.status-badge')).toHaveText('Quero jogar')
+    await expect(status.locator('option')).toHaveText([
+        'Quero jogar', 'Jogando', 'Concluído', 'Abandonado',
+    ])
+    await filter.selectOption('WISHLIST')
+    await expect(page.getByRole('heading', { name: 'Elden Ring' })).toBeVisible()
+    await filter.selectOption('COMPLETED')
+    await expect(page.getByRole('heading', { name: 'Elden Ring' })).toHaveCount(0)
+    await filter.selectOption('ALL')
+
+    for (const value of ['PLAYING', 'COMPLETED', 'DROPPED', 'WISHLIST'] as const) {
+        await status.selectOption(value)
+        await expect(status).toHaveValue(value)
+    }
+    expect(api.libraryPatches.map((patch) => patch.status)).toEqual([
+        'PLAYING', 'COMPLETED', 'DROPPED', 'WISHLIST',
+    ])
+    expect(api.libraryPatches.some((patch) => String(patch.status) === 'BACKLOG')).toBe(false)
+})
+
 test('expired mocked session redirects and clears access', async ({ page, api }) => {
     api.libraryUnauthorized = true
     await useVisualSession(page)
@@ -62,6 +89,7 @@ test('explore search and library import use only local fixtures', async ({ page,
     await page.getByRole('link', { name: 'Biblioteca', exact: true }).click()
     await expect(page).toHaveURL(/\/library$/)
     await expect(page.getByRole('heading', { name: 'Elden Ring', exact: true })).toBeVisible()
+    await expect(page.locator('.status-badge')).toHaveText('Quero jogar')
     expect(api.calls).toContain('POST /api/library/import')
 })
 

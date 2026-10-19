@@ -1,6 +1,6 @@
 # 🎮 Questlog
 
-Questlog is a full-stack game backlog and personal library application built with **Spring Boot, PostgreSQL, Redis, React and TypeScript**.
+Questlog is a full-stack personal game library application built with **Spring Boot, PostgreSQL, Redis, React and TypeScript**.
 
 The project allows users to authenticate, manage their personal game library, track game status, ratings and played hours, while providing a foundation for future game discovery, external metadata integration, reviews and social features.
 
@@ -34,11 +34,10 @@ The main goal of Questlog is to serve as a production-oriented portfolio project
 Users can add games from the global catalog to their personal library and track:
 
 - Game status
-    - Backlog
-    - Playing
-    - Completed
-    - Dropped
-    - Wishlist
+    - Quero jogar (`WISHLIST`)
+    - Jogando (`PLAYING`)
+    - Concluído (`COMPLETED`)
+    - Abandonado (`DROPPED`)
 - Rating
 - Played hours
 - Creation and update timestamps

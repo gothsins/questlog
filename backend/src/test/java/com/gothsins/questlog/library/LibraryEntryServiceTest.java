@@ -5,9 +5,12 @@ import com.gothsins.questlog.exception.ResourceNotFoundException;
 import com.gothsins.questlog.game.Game;
 import com.gothsins.questlog.game.GameRepository;
 import com.gothsins.questlog.library.dto.LibraryEntryResponse;
+import com.gothsins.questlog.library.dto.UpdateLibraryEntryRequest;
 import com.gothsins.questlog.user.User;
 import com.gothsins.questlog.user.UserRepository;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
@@ -74,11 +77,33 @@ class LibraryEntryServiceTest {
 
         assertEquals(user, savedEntry.getUser());
         assertEquals(game, savedEntry.getGame());
-        assertEquals(GameStatus.BACKLOG, savedEntry.getStatus());
+        assertEquals(GameStatus.WISHLIST, savedEntry.getStatus());
 
         assertEquals(gameId, result.gameId());
         assertEquals("Hollow Knight", result.title());
-        assertEquals(GameStatus.BACKLOG, result.status());
+        assertEquals(GameStatus.WISHLIST, result.status());
+    }
+
+    @ParameterizedTest
+    @EnumSource(GameStatus.class)
+    void shouldUpdateEachLibraryStatus(GameStatus status) {
+        User user = new User();
+        user.setId(1L);
+        Game game = new Game();
+        game.setId(10L);
+        game.setTitle("Hollow Knight");
+        LibraryEntry entry = new LibraryEntry();
+        entry.setId(2L);
+        entry.setUser(user);
+        entry.setGame(game);
+        when(libraryEntryRepository.findByIdAndUser_Id(2L, 1L))
+                .thenReturn(Optional.of(entry));
+
+        LibraryEntryResponse result = libraryEntryService.update(
+                2L, 1L, new UpdateLibraryEntryRequest(status, null, null));
+
+        assertEquals(status, entry.getStatus());
+        assertEquals(status, result.status());
     }
 
     @Test

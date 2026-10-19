@@ -2,10 +2,9 @@ package com.gothsins.questlog.library;
 
 public enum GameStatus {
 
-    BACKLOG,
+    WISHLIST,
     PLAYING,
     COMPLETED,
-    DROPPED,
-    WISHLIST
+    DROPPED
 
 }

@@ -74,7 +74,7 @@ class IgdbImportServiceTest {
                 gameId,
                 "Touchdown Football",
                 "https://example.com/cover.jpg",
-                GameStatus.BACKLOG,
+                GameStatus.WISHLIST,
                 null,
                 BigDecimal.ZERO,
                 null,
@@ -98,6 +98,7 @@ class IgdbImportServiceTest {
                 importService.importToLibrary(userId, igdbId);
 
         assertSame(expected, result);
+        assertEquals(GameStatus.WISHLIST, result.status());
 
         verify(libraryEntryService)
                 .addGameToLibrary(userId, gameId);
@@ -140,6 +141,7 @@ class IgdbImportServiceTest {
                 importService.importToLibrary(userId, igdbId);
 
         assertSame(expected, result);
+        assertEquals(GameStatus.WISHLIST, result.status());
 
         verify(questlogMetrics).incrementGamesCreated();
         verify(catalogCache).clear();

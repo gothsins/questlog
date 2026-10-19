@@ -4,11 +4,10 @@ export interface LibraryEntry {
     title: string
     coverUrl: string | null
     status:
-        | 'BACKLOG'
+        | 'WISHLIST'
         | 'PLAYING'
         | 'COMPLETED'
         | 'DROPPED'
-        | 'WISHLIST'
     rating: number | null
     hoursPlayed: number
     createdAt: string

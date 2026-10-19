@@ -41,7 +41,7 @@ public class LibraryEntry {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private GameStatus status = GameStatus.BACKLOG;
+    private GameStatus status = GameStatus.WISHLIST;
 
     @Column(
             precision = 3,
