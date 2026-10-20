@@ -29,6 +29,7 @@ test('collection shows all statuses, artwork and a missing-cover fallback', asyn
     await expect(page.locator('.game-card__manage-panel').first()).toBeHidden()
     await expect(page.getByRole('link', { name: collection[3].title, exact: true })).toHaveAttribute('title', collection[3].title)
     if (process.env.LIBRARY_CAPTURE) {
+        await expect(page.locator('.library-grid__item').last()).toHaveCSS('opacity', '1')
         await page.screenshot({
             path: `../docs/screenshots/library-${process.env.LIBRARY_CAPTURE}-${testInfo.project.name}.jpg`,
             quality: 86,

@@ -1,11 +1,21 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import type { LibraryEntry } from '../types/library'
 import { Link } from 'react-router-dom'
 
+export interface GameCardDraftState {
+    editing: boolean
+    managing: boolean
+    ratingInput: string
+    hoursInput: string
+    formError: string
+}
+
 interface GameCardProps {
     game: LibraryEntry
     viewMode: 'hybrid' | 'covers'
+    draft?: GameCardDraftState
+    onDraftChange: (entryId: number, draft: GameCardDraftState) => void
     isSaving: boolean
     disabled: boolean
     pendingStatus?: LibraryEntry['status']
@@ -33,6 +43,8 @@ const numberFormatter = new Intl.NumberFormat('pt-BR', {
 function GameCard({
     game,
     viewMode,
+    draft,
+    onDraftChange,
     isSaving,
     disabled,
     pendingStatus,
@@ -40,11 +52,15 @@ function GameCard({
     onSaveDetails,
 }: GameCardProps) {
     const [imageError, setImageError] = useState(false)
-    const [editing, setEditing] = useState(false)
-    const [managing, setManaging] = useState(false)
-    const [ratingInput, setRatingInput] = useState('')
-    const [hoursInput, setHoursInput] = useState('')
-    const [formError, setFormError] = useState('')
+    const [editing, setEditing] = useState(draft?.editing ?? false)
+    const [managing, setManaging] = useState(draft?.managing ?? false)
+    const [ratingInput, setRatingInput] = useState(draft?.ratingInput ?? '')
+    const [hoursInput, setHoursInput] = useState(draft?.hoursInput ?? '')
+    const [formError, setFormError] = useState(draft?.formError ?? '')
+
+    useEffect(() => {
+        onDraftChange(game.id, { editing, managing, ratingInput, hoursInput, formError })
+    }, [game.id, editing, managing, ratingInput, hoursInput, formError, onDraftChange])
 
     const coverUrl = imageError
         ? undefined

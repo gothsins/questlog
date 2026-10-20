@@ -86,7 +86,7 @@
     grid-template-columns: minmax(220px, 1fr) minmax(150px, 185px) minmax(170px, 210px) 190px;
     align-items: end;
     gap: 12px;
-    margin-bottom: 24px;
+    margin-bottom: 18px;
     padding: 18px;
     border: 1px solid #30283b;
     border-radius: 15px;
@@ -167,6 +167,63 @@
     background: #382a49;
 }
 
+.library-quick-filters {
+    display: flex;
+    gap: 8px;
+    max-width: 100%;
+    margin: 0 0 17px;
+    padding: 6px 5px 9px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-color: #65507e transparent;
+    scrollbar-width: thin;
+}
+
+.library-quick-filters__button {
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 9px;
+    min-height: 39px;
+    padding: 8px 12px;
+    border: 1px solid #473852;
+    border-radius: 9px;
+    background: #1b1522;
+    color: #c7b8d7;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: border-color 0.18s ease, color 0.18s ease;
+}
+
+.library-quick-filters__button:hover { border-color: #9166be; color: #fff; }
+.library-quick-filters__button[aria-pressed='true'] { border-color: #9367c9; color: #fff; }
+.library-quick-filters__button > span:not(.library-quick-filters__indicator) { position: relative; z-index: 1; }
+
+.library-quick-filters__indicator {
+    position: absolute;
+    z-index: 0;
+    inset: 0;
+    border-radius: 8px;
+    background: linear-gradient(130deg, #7045a6, #59347f);
+    box-shadow: inset 0 1px #ffffff25, 0 3px 10px #0003;
+}
+
+.library-quick-filters__count {
+    min-width: 18px;
+    padding: 2px 5px;
+    border-radius: 5px;
+    background: #ffffff16;
+    color: #e7d9f5;
+    font-size: 10px;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+}
+
 .library-results {
     margin: 0 0 14px;
     color: #a99db7;
@@ -177,10 +234,15 @@
 }
 
 .library-grid {
+    position: relative;
     display: grid;
     align-items: stretch;
     gap: 18px;
 }
+
+.library-grid__item { display: flex; min-width: 0; }
+.library-grid__item[aria-hidden='true'] { pointer-events: none; }
+.library-grid__item > .game-card { width: 100%; }
 
 .library-grid--hybrid {
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
@@ -492,7 +554,8 @@
 
 @media (prefers-reduced-motion: reduce) {
     .game-card,
-    .game-card__cover img { transition: none; }
+    .game-card__cover img,
+    .library-quick-filters__button { transition: none; }
     .game-card:hover,
     .game-card__cover-link:hover img,
     .game-card__cover-link:focus-visible img { transform: none; }

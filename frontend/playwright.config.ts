@@ -15,6 +15,7 @@ export default defineConfig({
         baseURL: FRONTEND_ORIGIN,
         trace: 'retain-on-failure',
         screenshot: 'only-on-failure',
+        video: process.env.LIBRARY_MOTION_CAPTURE === '1' ? 'on' : 'off',
         serviceWorkers: 'block',
     },
     projects: [
