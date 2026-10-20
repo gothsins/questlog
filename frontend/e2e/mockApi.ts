@@ -2,6 +2,7 @@ import { expect, test as base, type BrowserContext, type Page } from '@playwrigh
 import { FRONTEND_ORIGIN, MOCK_API_ORIGIN } from './network'
 import type { GameReview } from '../src/types/reviews'
 import type { LibraryEntry } from '../src/types/library'
+import type { HomeDiscovery } from '../src/types/discovery'
 
 const date = '2026-01-01T00:00:00'
 
@@ -35,6 +36,16 @@ export class MockApi {
     readonly libraryPatches: Partial<LibraryEntry>[] = []
     readonly unexpected: string[] = []
     entries: LibraryEntry[] = [{ ...libraryEntry }]
+    discoveryFails = false
+    discoveryGate: Promise<void> | null = null
+    discovery: HomeDiscovery = {
+        popular: { available: true, updatedAt: '2026-01-01T00:00:00Z', games: [
+            { igdbId: 99, title: 'Elden Ring', coverUrl: null, releaseDate: '2022-02-25', popularitySource: 'IGDB PopScore · visitas às páginas' },
+        ] },
+        upcoming: { available: true, updatedAt: '2026-01-01T00:00:00Z', games: [
+            { igdbId: 199, title: 'Future Game', coverUrl: null, releaseDate: '2027-01-01', popularitySource: null },
+        ] },
+    }
     mediaFails = false
     gameFails = false
     libraryUnauthorized = false
@@ -107,6 +118,10 @@ export class MockApi {
                 return this.libraryUnauthorized
                     ? json({ message: 'Authentication required', status: 401 }, 401)
                     : json(this.entries)
+            }
+            if (call === 'GET /api/discovery/home') {
+                if (this.discoveryGate) await this.discoveryGate
+                return this.discoveryFails ? json({ status: 503 }, 503) : json(this.discovery)
             }
             if (call === 'GET /api/games/42/reviews') {
                 return this.reviewListStatus

@@ -44,7 +44,7 @@ function AppHeader() {
             <div className="app-header__content">
 
                 <NavLink
-                    to="/library"
+                    to="/home"
                     className="app-brand"
                 >
                     <div className="app-brand__logo">
@@ -58,6 +58,12 @@ function AppHeader() {
                     className="app-navigation"
                     aria-label="Navegação principal"
                 >
+                    <NavLink
+                        to="/home"
+                        className={({ isActive }) => isActive ? 'nav-link nav-link--active' : 'nav-link'}
+                    >
+                        Início
+                    </NavLink>
                     <NavLink
                         to="/explore"
                         className={({ isActive }) =>

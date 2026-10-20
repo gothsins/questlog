@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
     useMutation,
     useQuery,
@@ -17,10 +17,12 @@ import '../styles/explore.css'
 
 function ExplorePage() {
     const navigate = useNavigate()
+    const [searchParams] = useSearchParams()
+    const initialSearch = (searchParams.get('q') ?? '').trim().slice(0, 80)
     const queryClient = useQueryClient()
 
-    const [input, setInput] = useState('')
-    const [searchTerm, setSearchTerm] = useState('')
+    const [input, setInput] = useState(initialSearch)
+    const [searchTerm, setSearchTerm] = useState(initialSearch.length >= 2 ? initialSearch : '')
     const [feedback, setFeedback] = useState('')
     const [confirmedIds, setConfirmedIds] = useState<number[]>([])
 
