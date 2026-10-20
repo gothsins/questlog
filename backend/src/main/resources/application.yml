@@ -66,3 +66,6 @@ igdb:
   client-secret: ${IGDB_CLIENT_SECRET}
   api-url: https://api.igdb.com/v4
   token-url: https://id.twitch.tv/oauth2/token
+
+discovery:
+  cache-ttl: ${DISCOVERY_CACHE_TTL:6h}

@@ -2,6 +2,7 @@ package com.gothsins.questlog.igdb;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 
@@ -20,8 +21,12 @@ public class TwitchAuthService {
             RestClient.Builder restClientBuilder,
             IgdbProperties properties
     ) {
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(3000);
+        requestFactory.setReadTimeout(5000);
         this.restClient = restClientBuilder
                 .baseUrl(properties.tokenUrl())
+                .requestFactory(requestFactory)
                 .build();
 
         this.properties = properties;
