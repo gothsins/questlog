@@ -2,6 +2,7 @@
 package com.gothsins.questlog.config;
 
 import com.gothsins.questlog.discovery.DiscoverySection;
+import com.gothsins.questlog.igdb.IgdbGameDetailsResponse;
 import com.gothsins.questlog.game.dto.GameResponse;
 import com.gothsins.questlog.igdb.dto.IgdbSearchResult;
 import org.springframework.context.annotation.Bean;
@@ -140,6 +141,14 @@ public class RedisConfig {
                                         jsonMapper, DiscoverySection.class))
                 );
 
+        RedisCacheConfiguration discoveryGameConfig = defaultConfig
+                .entryTtl(discoveryTtl)
+                .serializeValuesWith(
+                        RedisSerializationContext.SerializationPair
+                                .fromSerializer(new JacksonJsonRedisSerializer<>(
+                                        jsonMapper, IgdbGameDetailsResponse.class))
+                );
+
         return RedisCacheManager
                 .builder(connectionFactory)
                 .cacheDefaults(defaultConfig)
@@ -153,7 +162,8 @@ public class RedisConfig {
                                 "steamReviews", steamReviewsConfig,
                                 "steamReviewTexts", steamReviewTextsConfig,
                                 "discoveryPopular", discoveryConfig,
-                                "discoveryUpcoming", discoveryConfig
+                                "discoveryUpcoming", discoveryConfig,
+                                "discoveryGameDetails", discoveryGameConfig
                         )
                 )
                 .disableCreateOnMissingCache()
