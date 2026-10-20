@@ -7,6 +7,7 @@ const RegisterPage = lazy(() => import('./pages/RegisterPage'))
 const LandingPage = lazy(() => import('./pages/LandingPage'))
 const LoginPage = lazy(() => import('./pages/LoginPage'))
 const LibraryPage = lazy(() => import('./pages/LibraryPage'))
+const HomePage = lazy(() => import('./pages/HomePage'))
 const AuthenticatedLayout = lazy(() => import('./layouts/AuthenticatedLayout'))
 const ExplorePage = lazy(() => import('./pages/ExplorePage'))
 const GameDetailsPage = lazy(() => import('./pages/GameDetailsPage'))
@@ -21,6 +22,7 @@ function App() {
 
                 <Route element={<ProtectedRoute />}>
                     <Route element={<AuthenticatedLayout />}>
+                        <Route path="/home" element={<HomePage />} />
                         <Route path="/library" element={<LibraryPage />} />
                         <Route path="/explore" element={<ExplorePage />} />
                     </Route>

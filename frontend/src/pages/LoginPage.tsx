@@ -54,7 +54,9 @@ function LoginPage() {
 
             sessionStorage.setItem('questlog_token', response.token)
             queryClient.clear()
-            navigate('/library', { replace: true })
+            const requestedPath = (location.state as { from?: string } | null)?.from
+            navigate(requestedPath?.startsWith('/') && !requestedPath.startsWith('//')
+                ? requestedPath : '/home', { replace: true })
         } catch (caughtError) {
             setError(
                 caughtError instanceof Error

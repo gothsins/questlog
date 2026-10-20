@@ -1,10 +1,12 @@
 
 package com.gothsins.questlog.config;
 
+import com.gothsins.questlog.discovery.DiscoverySection;
 import com.gothsins.questlog.game.dto.GameResponse;
 import com.gothsins.questlog.igdb.dto.IgdbSearchResult;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -27,7 +29,8 @@ public class RedisConfig {
     @Bean
     public RedisCacheManager redisCacheManager(
             RedisConnectionFactory connectionFactory,
-            JsonMapper jsonMapper
+            JsonMapper jsonMapper,
+            @Value("${discovery.cache-ttl:6h}") Duration discoveryTtl
     ) {
 
         RedisCacheConfiguration defaultConfig =
@@ -129,6 +132,14 @@ public class RedisConfig {
                                 )
                 );
 
+        RedisCacheConfiguration discoveryConfig = defaultConfig
+                .entryTtl(discoveryTtl)
+                .serializeValuesWith(
+                        RedisSerializationContext.SerializationPair
+                                .fromSerializer(new JacksonJsonRedisSerializer<>(
+                                        jsonMapper, DiscoverySection.class))
+                );
+
         return RedisCacheManager
                 .builder(connectionFactory)
                 .cacheDefaults(defaultConfig)
@@ -140,7 +151,9 @@ public class RedisConfig {
                                 "gameMedia", gameMediaConfig,
                                 "steamLinks", steamLinksConfig,
                                 "steamReviews", steamReviewsConfig,
-                                "steamReviewTexts", steamReviewTextsConfig
+                                "steamReviewTexts", steamReviewTextsConfig,
+                                "discoveryPopular", discoveryConfig,
+                                "discoveryUpcoming", discoveryConfig
                         )
                 )
                 .disableCreateOnMissingCache()

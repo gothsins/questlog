@@ -1,12 +1,13 @@
 import { test, expect, useVisualSession } from './mockApi'
 
-test('mocked login opens library and can update a game status', async ({ page, api }) => {
+test('mocked login opens home and can update a game status', async ({ page, api }) => {
     api.loginSucceeds = true
     await page.goto('/login')
     await page.getByRole('textbox', { name: 'Usuário' }).fill('visual_user')
     await page.getByLabel('Senha', { exact: true }).fill('exemplo-ficticio-2026')
     await page.getByRole('button', { name: /Entrar no Questlog/ }).click()
-    await expect(page).toHaveURL(/\/library$/)
+    await expect(page).toHaveURL(/\/home$/)
+    await page.getByRole('link', { name: 'Biblioteca', exact: true }).click()
     await expect(page.getByRole('heading', { name: 'Minha biblioteca' })).toBeVisible()
     await page.getByRole('button', { name: 'Gerenciar' }).click()
     await page.getByLabel('Estado do jogo').selectOption('PLAYING')

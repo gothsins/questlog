@@ -4,6 +4,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import java.util.Optional;
 
 import java.util.List;
@@ -20,12 +21,31 @@ public class IgdbClient {
             TwitchAuthService twitchAuthService,
             IgdbProperties properties
     ) {
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(3000);
+        requestFactory.setReadTimeout(5000);
         this.restClient = restClientBuilder
                 .baseUrl(properties.apiUrl())
+                .requestFactory(requestFactory)
                 .build();
 
         this.twitchAuthService = twitchAuthService;
         this.properties = properties;
+    }
+
+    public <T> List<T> query(String endpoint, String body, Class<T[]> responseType) {
+        T[] response = restClient.post()
+                .uri(endpoint)
+                .header("Client-ID", properties.clientId())
+                .header("Authorization", "Bearer " + twitchAuthService.getAccessToken())
+                .contentType(MediaType.TEXT_PLAIN)
+                .body(body)
+                .retrieve()
+                .body(responseType);
+        if (response == null) {
+            throw new IllegalStateException("IGDB returned no response body");
+        }
+        return List.of(response);
     }
 
     public List<IgdbGameResponse> searchGames(String query) {
