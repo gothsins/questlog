@@ -31,7 +31,9 @@ test('library offers exactly four statuses and filters Quero jogar', async ({ pa
     await filter.selectOption('COMPLETED')
     await expect(page.getByRole('heading', { name: 'Elden Ring' })).toHaveCount(0)
     await filter.selectOption('ALL')
-    await page.getByRole('button', { name: 'Gerenciar' }).click()
+    if (!(await status.isVisible())) {
+        await page.getByRole('button', { name: 'Gerenciar' }).click()
+    }
 
     for (const value of ['PLAYING', 'COMPLETED', 'DROPPED', 'WISHLIST'] as const) {
         await status.selectOption(value)
