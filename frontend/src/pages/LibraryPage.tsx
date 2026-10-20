@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
+import { useReducedMotion } from 'motion/react'
 
 import { authenticatedFetch } from '../api/client'
 import { syncReviewRating } from '../components/reviewCache'
 import type { LibraryEntry } from '../types/library'
 import type { GameReview } from '../types/reviews'
-import GameCard from '../components/GameCard'
+import LibraryShelf from '../components/LibraryShelf'
+import LibraryQuickFilters from '../components/LibraryQuickFilters'
+import type { LibraryStatusFilter } from '../components/LibraryQuickFilters'
+import { readLibraryViewMode, saveLibraryViewMode } from '../components/libraryViewPreference'
 
 import '../styles/library.css'
 
@@ -19,6 +23,7 @@ type LibraryEntryChanges = {
 function LibraryPage() {
     const navigate = useNavigate()
     const queryClient = useQueryClient()
+    const reducedMotion = Boolean(useReducedMotion())
 
     const [games, setGames] = useState<LibraryEntry[]>([])
     const [loading, setLoading] = useState(true)
@@ -32,13 +37,13 @@ function LibraryPage() {
     } | null>(null)
 
     const [search, setSearch] = useState('')
-    const [statusFilter, setStatusFilter] = useState<
-        'ALL' | LibraryEntry['status']
-    >('ALL')
+    const [statusFilter, setStatusFilter] = useState<LibraryStatusFilter>('ALL')
     const [sortOrder, setSortOrder] = useState<
         'recent' | 'oldest' | 'title'
     >('recent')
-    const [viewMode, setViewMode] = useState<'hybrid' | 'covers'>('hybrid')
+    const [viewMode, setViewMode] = useState(readLibraryViewMode)
+
+    useEffect(() => saveLibraryViewMode(viewMode), [viewMode])
 
     useEffect(() => {
         async function loadLibrary() {
@@ -264,7 +269,7 @@ function LibraryPage() {
                             onChange={(event) =>
                                 setStatusFilter(
                                     event.target.value as
-                                        'ALL' | LibraryEntry['status'],
+                                        LibraryStatusFilter,
                                 )
                             }
                         >
@@ -316,6 +321,15 @@ function LibraryPage() {
                 </div>
             )}
 
+            {!error && games.length > 0 && (
+                <LibraryQuickFilters
+                    games={games}
+                    selected={statusFilter}
+                    onSelect={setStatusFilter}
+                    reducedMotion={reducedMotion}
+                />
+            )}
+
             {error && (
                 <div className="library-state" role="alert">
                     {error}
@@ -354,25 +368,15 @@ function LibraryPage() {
                 </div>
             )}
 
-            {!error && filteredGames.length > 0 && (
-                <div className={`library-grid library-grid--${viewMode}`}>
-                    {filteredGames.map((game) => (
-                        <GameCard
-                            key={game.id}
-                            game={game}
-                            viewMode={viewMode}
-                            isSaving={pendingUpdate?.id === game.id}
-                            disabled={pendingUpdate !== null}
-                            pendingStatus={
-                                pendingUpdate?.id === game.id
-                                    ? pendingUpdate.status
-                                    : undefined
-                            }
-                            onStatusChange={handleStatusChange}
-                            onSaveDetails={handleDetailsSave}
-                        />
-                    ))}
-                </div>
+            {!error && games.length > 0 && (
+                <LibraryShelf
+                    games={filteredGames}
+                    viewMode={viewMode}
+                    reducedMotion={reducedMotion}
+                    pendingUpdate={pendingUpdate}
+                    onStatusChange={handleStatusChange}
+                    onSaveDetails={handleDetailsSave}
+                />
             )}
         </section>
     )
