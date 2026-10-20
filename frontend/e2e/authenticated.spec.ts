@@ -8,6 +8,7 @@ test('mocked login opens library and can update a game status', async ({ page, a
     await page.getByRole('button', { name: /Entrar no Questlog/ }).click()
     await expect(page).toHaveURL(/\/library$/)
     await expect(page.getByRole('heading', { name: 'Minha biblioteca' })).toBeVisible()
+    await page.getByRole('button', { name: 'Gerenciar' }).click()
     await page.getByLabel('Estado do jogo').selectOption('PLAYING')
     await expect(page.getByText('Jogando', { exact: true }).first()).toBeVisible()
     expect(api.calls).toContain('PATCH /api/library/1')
@@ -19,6 +20,7 @@ test('library offers exactly four statuses and filters Quero jogar', async ({ pa
 
     const status = page.getByLabel('Estado do jogo')
     const filter = page.getByLabel('Estado', { exact: true })
+    await page.getByRole('button', { name: 'Gerenciar' }).click()
     await expect(status).toHaveValue('WISHLIST')
     await expect(page.locator('.status-badge')).toHaveText('Quero jogar')
     await expect(status.locator('option')).toHaveText([
@@ -29,6 +31,7 @@ test('library offers exactly four statuses and filters Quero jogar', async ({ pa
     await filter.selectOption('COMPLETED')
     await expect(page.getByRole('heading', { name: 'Elden Ring' })).toHaveCount(0)
     await filter.selectOption('ALL')
+    await page.getByRole('button', { name: 'Gerenciar' }).click()
 
     for (const value of ['PLAYING', 'COMPLETED', 'DROPPED', 'WISHLIST'] as const) {
         await status.selectOption(value)

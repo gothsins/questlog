@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom'
 
 interface GameCardProps {
     game: LibraryEntry
+    viewMode: 'hybrid' | 'covers'
     isSaving: boolean
     disabled: boolean
     pendingStatus?: LibraryEntry['status']
@@ -31,6 +32,7 @@ const numberFormatter = new Intl.NumberFormat('pt-BR', {
 
 function GameCard({
     game,
+    viewMode,
     isSaving,
     disabled,
     pendingStatus,
@@ -39,6 +41,7 @@ function GameCard({
 }: GameCardProps) {
     const [imageError, setImageError] = useState(false)
     const [editing, setEditing] = useState(false)
+    const [managing, setManaging] = useState(false)
     const [ratingInput, setRatingInput] = useState('')
     const [hoursInput, setHoursInput] = useState('')
     const [formError, setFormError] = useState('')
@@ -107,20 +110,26 @@ function GameCard({
     }
 
     return (
-        <article className="game-card">
+        <article className={`game-card game-card--${viewMode}`}>
             <div className="game-card__cover">
-                {coverUrl ? (
-                    <img
-                        src={coverUrl}
-                        alt={`Capa de ${game.title}`}
-                        loading="lazy"
-                        onError={() => setImageError(true)}
-                    />
-                ) : (
-                    <div className="game-card__cover-placeholder">
-                        <span>Q</span>
-                    </div>
-                )}
+                <Link
+                    to={`/games/${game.gameId}`}
+                    className="game-card__cover-link"
+                    aria-label={`Ver detalhes de ${game.title}`}
+                >
+                    {coverUrl ? (
+                        <img
+                            src={coverUrl}
+                            alt=""
+                            loading="lazy"
+                            onError={() => setImageError(true)}
+                        />
+                    ) : (
+                        <div className="game-card__cover-placeholder" aria-hidden="true">
+                            <span>Q</span>
+                        </div>
+                    )}
+                </Link>
             </div>
 
             <div className="game-card__content">
@@ -129,6 +138,7 @@ function GameCard({
                         <Link
                             to={`/games/${game.gameId}`}
                             className="game-card__details-link"
+                            title={game.title}
                         >
                             {game.title}
                         </Link>
@@ -141,139 +151,165 @@ function GameCard({
                     </span>
                 </div>
 
-                <div className="game-card__stats">
-                    <div>
-                        <span className="game-card__label">Nota</span>
-                        <strong>
-                            {game.rating === null
-                                ? '—'
-                                : `★ ${numberFormatter.format(game.rating)}`}
-                        </strong>
-                    </div>
+                {viewMode === 'hybrid' && (
+                    <div className="game-card__stats">
+                        <div>
+                            <span className="game-card__label">Nota</span>
+                            <strong>
+                                {game.rating === null
+                                    ? '—'
+                                    : `★ ${numberFormatter.format(game.rating)}`}
+                            </strong>
+                        </div>
 
-                    <div>
-                        <span className="game-card__label">Horas</span>
-                        <strong>
-                            {numberFormatter.format(game.hoursPlayed ?? 0)}h
-                        </strong>
+                        <div>
+                            <span className="game-card__label">Horas</span>
+                            <strong>
+                                {numberFormatter.format(game.hoursPlayed ?? 0)}h
+                            </strong>
+                        </div>
                     </div>
+                )}
+
+                <div className="game-card__actions">
+                    {viewMode === 'hybrid' && (
+                        <Link to={`/games/${game.gameId}`} className="game-card__open-link">
+                            Ver detalhes <span aria-hidden="true">↗</span>
+                        </Link>
+                    )}
+                    <button
+                        className="game-card__manage-toggle"
+                        type="button"
+                        aria-expanded={managing}
+                        aria-controls={`game-manage-${game.id}`}
+                        disabled={disabled}
+                        onClick={() => setManaging((open) => !open)}
+                    >
+                        {managing ? 'Fechar' : 'Gerenciar'}
+                    </button>
                 </div>
 
-                <div className="game-card__status-editor">
-                    <label htmlFor={`game-status-${game.id}`}>
-                        Estado do jogo
-                    </label>
+                <div
+                    id={`game-manage-${game.id}`}
+                    className="game-card__manage-panel"
+                    hidden={!managing}
+                >
+                    <div className="game-card__status-editor">
+                        <label htmlFor={`game-status-${game.id}`}>
+                            Estado do jogo
+                        </label>
 
-                    <select
-                        id={`game-status-${game.id}`}
-                        value={pendingStatus ?? game.status}
-                        disabled={disabled}
-                        onChange={(event) =>
-                            onStatusChange(
-                                game.id,
-                                event.target.value as LibraryEntry['status'],
-                            )
-                        }
-                    >
-                        {Object.entries(statusLabels).map(([value, label]) => (
-                            <option key={value} value={value}>
-                                {label}
-                            </option>
-                        ))}
-                    </select>
+                        <select
+                            id={`game-status-${game.id}`}
+                            value={pendingStatus ?? game.status}
+                            disabled={disabled}
+                            onChange={(event) =>
+                                onStatusChange(
+                                    game.id,
+                                    event.target.value as LibraryEntry['status'],
+                                )
+                            }
+                        >
+                            {Object.entries(statusLabels).map(([value, label]) => (
+                                <option key={value} value={value}>
+                                    {label}
+                                </option>
+                            ))}
+                        </select>
 
-                    {isSaving && (
-                        <small role="status">Salvando alteração...</small>
+                        {isSaving && (
+                            <small role="status">Salvando alteração...</small>
+                        )}
+                    </div>
+
+                    {!editing ? (
+                        <button
+                            className="game-card__edit-button"
+                            type="button"
+                            disabled={disabled}
+                            onClick={openEditor}
+                        >
+                            {game.rating === null
+                                ? '★ Registrar avaliação'
+                                : '★ Editar avaliação'}
+                        </button>
+                    ) : (
+                        <form
+                            className="game-card__details-form"
+                            onSubmit={(event) => void handleSubmit(event)}
+                            noValidate
+                        >
+                            <div className="game-card__details-fields">
+                                <div>
+                                    <label htmlFor={`game-rating-${game.id}`}>
+                                        Nota (0 a 10)
+                                    </label>
+                                    <input
+                                        id={`game-rating-${game.id}`}
+                                        type="text"
+                                        inputMode="decimal"
+                                        autoComplete="off"
+                                        placeholder="Ex.: 9,5"
+                                        value={ratingInput}
+                                        disabled={disabled}
+                                        maxLength={5}
+                                        onChange={(event) =>
+                                            setRatingInput(event.target.value)
+                                        }
+                                    />
+                                </div>
+
+                                <div>
+                                    <label htmlFor={`game-hours-${game.id}`}>
+                                        Horas jogadas
+                                    </label>
+                                    <input
+                                        id={`game-hours-${game.id}`}
+                                        type="text"
+                                        inputMode="decimal"
+                                        autoComplete="off"
+                                        placeholder="Ex.: 62,5"
+                                        value={hoursInput}
+                                        disabled={disabled}
+                                        maxLength={12}
+                                        onChange={(event) =>
+                                            setHoursInput(event.target.value)
+                                        }
+                                    />
+                                </div>
+                            </div>
+
+                            <p className="game-card__details-hint">
+                                Use vírgula ou ponto. A nota é opcional no primeiro registro.
+                            </p>
+
+                            {formError && (
+                                <p className="game-card__details-error" role="alert">
+                                    {formError}
+                                </p>
+                            )}
+
+                            <div className="game-card__details-actions">
+                                <button
+                                    type="button"
+                                    className="game-card__cancel-button"
+                                    disabled={disabled}
+                                    onClick={closeEditor}
+                                >
+                                    Cancelar
+                                </button>
+
+                                <button
+                                    type="submit"
+                                    className="game-card__save-button"
+                                    disabled={disabled}
+                                >
+                                    {isSaving ? 'Salvando...' : 'Salvar'}
+                                </button>
+                            </div>
+                        </form>
                     )}
                 </div>
-
-                {!editing ? (
-                    <button
-                        className="game-card__edit-button"
-                        type="button"
-                        disabled={disabled}
-                        onClick={openEditor}
-                    >
-                        {game.rating === null
-                            ? '★ Registrar avaliação'
-                            : '★ Editar avaliação'}
-                    </button>
-                ) : (
-                    <form
-                        className="game-card__details-form"
-                        onSubmit={(event) => void handleSubmit(event)}
-                        noValidate
-                    >
-                        <div className="game-card__details-fields">
-                            <div>
-                                <label htmlFor={`game-rating-${game.id}`}>
-                                    Nota (0 a 10)
-                                </label>
-                                <input
-                                    id={`game-rating-${game.id}`}
-                                    type="text"
-                                    inputMode="decimal"
-                                    autoComplete="off"
-                                    placeholder="Ex.: 9,5"
-                                    value={ratingInput}
-                                    disabled={disabled}
-                                    maxLength={5}
-                                    onChange={(event) =>
-                                        setRatingInput(event.target.value)
-                                    }
-                                />
-                            </div>
-
-                            <div>
-                                <label htmlFor={`game-hours-${game.id}`}>
-                                    Horas jogadas
-                                </label>
-                                <input
-                                    id={`game-hours-${game.id}`}
-                                    type="text"
-                                    inputMode="decimal"
-                                    autoComplete="off"
-                                    placeholder="Ex.: 62,5"
-                                    value={hoursInput}
-                                    disabled={disabled}
-                                    maxLength={12}
-                                    onChange={(event) =>
-                                        setHoursInput(event.target.value)
-                                    }
-                                />
-                            </div>
-                        </div>
-
-                        <p className="game-card__details-hint">
-                            Use vírgula ou ponto. A nota é opcional no primeiro registro.
-                        </p>
-
-                        {formError && (
-                            <p className="game-card__details-error" role="alert">
-                                {formError}
-                            </p>
-                        )}
-
-                        <div className="game-card__details-actions">
-                            <button
-                                type="button"
-                                className="game-card__cancel-button"
-                                disabled={disabled}
-                                onClick={closeEditor}
-                            >
-                                Cancelar
-                            </button>
-
-                            <button
-                                type="submit"
-                                className="game-card__save-button"
-                                disabled={disabled}
-                            >
-                                {isSaving ? 'Salvando...' : 'Salvar'}
-                            </button>
-                        </div>
-                    </form>
-                )}
             </div>
         </article>
     )

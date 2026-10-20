@@ -110,12 +110,13 @@ test('library rating save refreshes the game review feed on return to details', 
 
     await page.getByRole('link', { name: 'Biblioteca', exact: true }).click()
     await expect(page).toHaveURL(/\/library$/)
+    await page.getByRole('button', { name: 'Gerenciar' }).click()
     await page.getByRole('button', { name: '★ Editar avaliação' }).click()
     await page.getByRole('textbox', { name: 'Nota (0 a 10)' }).fill('9')
     api.reviewListStatus = 503
     await page.getByRole('button', { name: 'Salvar', exact: true }).click()
     await expect(page.getByRole('status').filter({ hasText: 'Avaliação e horas salvas' })).toBeVisible()
-    await page.getByRole('link', { name: 'Elden Ring' }).click()
+    await page.getByRole('link', { name: 'Elden Ring', exact: true }).click()
     await expect(page).toHaveURL(/\/games\/42$/)
     await expect(page.getByText('Sua nota:')).toContainText('9 / 10')
     await expect(page.locator('.quest-review-card').filter({ hasText: 'visual_user' }).getByLabel('Nota 9 de 10')).toBeVisible()
