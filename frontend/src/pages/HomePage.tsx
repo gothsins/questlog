@@ -13,8 +13,8 @@ async function readJson<T>(path: string, signal: AbortSignal): Promise<T> {
     return response.json() as Promise<T>
 }
 
-function explorePath(title: string) {
-    return `/explore?q=${encodeURIComponent(title)}`
+function detailsPath(igdbId: number) {
+    return `/games/igdb/${igdbId}`
 }
 
 function Cover({ title, url }: { title: string; url: string | null }) {
@@ -31,7 +31,7 @@ function formatDate(value: string | null) {
 }
 
 function DiscoveryCard({ game, index, upcoming }: { game: DiscoveryGame; index: number; upcoming?: boolean }) {
-    return <Link className="home-game" to={explorePath(game.title)} aria-label={`Buscar ${game.title} no catálogo`}>
+    return <Link className="home-game" to={detailsPath(game.igdbId)} aria-label={`Conhecer ${game.title}`}>
         <span className="home-cover"><Cover title={game.title} url={game.coverUrl} /></span>
         <span className="home-game__meta"><span className="home-game__index">{upcoming ? formatDate(game.releaseDate) : String(index + 1).padStart(2, '0')}</span><strong title={game.title}>{game.title}</strong><small>{upcoming ? 'Próximo lançamento' : 'Visitas às páginas · IGDB'}</small></span>
     </Link>
@@ -67,7 +67,7 @@ function HomePage() {
     return <div className="home-page">
         <section className="home-hero" aria-labelledby="home-title">
             <div className="home-hero__copy"><span className="home-eyebrow">SEU PRÓXIMO CAPÍTULO COMEÇA AQUI</span><h1 id="home-title">Descubra o que vem <em>depois.</em></h1><p>Jogos que despertam curiosidade, lançamentos no horizonte e a jornada que você já começou.</p><Link className="home-primary" to="/explore">Explorar jogos <span aria-hidden="true">↗</span></Link></div>
-            <div className="home-hero__feature">{featured ? <Link to={explorePath(featured.title)} className="home-feature" aria-label={`Buscar ${featured.title} no catálogo`}><span className="home-feature__art"><Cover title={featured.title} url={featured.coverUrl} /></span><span className="home-feature__caption"><small>EM DESTAQUE · VISITAS ÀS PÁGINAS NA IGDB</small><strong>{featured.title}</strong><span>Conhecer jogo ↗</span></span></Link> : <div className="home-feature home-feature--empty"><span className="home-feature__mark">✦</span><span>{discovery.isPending ? 'Buscando novidades na IGDB…' : 'Novas descobertas chegam em breve.'}</span></div>}</div>
+            <div className="home-hero__feature">{featured ? <Link to={detailsPath(featured.igdbId)} className="home-feature" aria-label={`Conhecer ${featured.title}`}><span className="home-feature__art"><Cover title={featured.title} url={featured.coverUrl} /></span><span className="home-feature__caption"><small>EM DESTAQUE · VISITAS ÀS PÁGINAS NA IGDB</small><strong>{featured.title}</strong><span>Conhecer jogo ↗</span></span></Link> : <div className="home-feature home-feature--empty"><span className="home-feature__mark">✦</span><span>{discovery.isPending ? 'Buscando novidades na IGDB…' : 'Novas descobertas chegam em breve.'}</span></div>}</div>
         </section>
 
         {discovery.isError && <div className="home-state" role="alert">Não foi possível carregar a descoberta. <button type="button" onClick={() => void discovery.refetch()}>Tentar novamente</button></div>}

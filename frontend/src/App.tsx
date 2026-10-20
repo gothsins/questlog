@@ -11,6 +11,7 @@ const HomePage = lazy(() => import('./pages/HomePage'))
 const AuthenticatedLayout = lazy(() => import('./layouts/AuthenticatedLayout'))
 const ExplorePage = lazy(() => import('./pages/ExplorePage'))
 const GameDetailsPage = lazy(() => import('./pages/GameDetailsPage'))
+const DiscoveryGameDetailsPage = lazy(() => import('./pages/DiscoveryGameDetailsPage'))
 const ProfilePage = lazy(() => import('./pages/ProfilePage'))
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
                         <Route path="/library" element={<LibraryPage />} />
                         <Route path="/explore" element={<ExplorePage />} />
                     </Route>
+                    <Route path="/games/igdb/:igdbId" element={<DiscoveryGameDetailsPage />} />
                     <Route path="/games/:gameId" element={<GameDetailsPage />} />
                     <Route path="/profile" element={<ProfilePage />} />
                 </Route>

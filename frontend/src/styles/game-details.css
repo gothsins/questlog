@@ -71,6 +71,42 @@
     min-width: 0;
     padding-top: 6px;
 }
+
+.discovery-game__actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 30px;
+}
+
+.discovery-game__actions p,
+.discovery-game__note {
+    width: 100%;
+    color: var(--text-muted);
+}
+
+.discovery-game__primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 46px;
+    padding: 11px 20px;
+    border: 1px solid #a78bfa;
+    border-radius: 10px;
+    background: #6d28d9;
+    color: #fff;
+    font: inherit;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.discovery-game__primary:hover { background: #7c3aed; }
+.discovery-game__primary:disabled { opacity: 0.55; cursor: wait; }
+.discovery-game__primary:focus-visible,
+.discovery-game__actions button:focus-visible { outline: 2px solid #ddd6fe; outline-offset: 3px; }
+.discovery-game__owned { color: #c4b5fd; font-weight: 700; }
 .game-details__eyebrow {
     display: block;
     color: #b69af9;
