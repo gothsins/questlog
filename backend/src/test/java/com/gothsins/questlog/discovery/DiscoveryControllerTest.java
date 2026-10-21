@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.cache.CacheManager;
+import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -46,12 +47,39 @@ class DiscoveryControllerTest {
         when(service.upcoming()).thenReturn(new DiscoverySection(List.of(
                 new DiscoveryGame(42, "Upcoming", null, LocalDate.now(ZoneOffset.UTC).plusDays(30), null),
                 new DiscoveryGame(41, "Released overnight", null, LocalDate.now(ZoneOffset.UTC).minusDays(1), null)), true, null));
+        when(service.steam()).thenReturn(new DiscoverySection(List.of(
+                new DiscoveryGame(100, "Steam game", "https://images.igdb.com/cover.jpg",
+                        LocalDate.now(ZoneOffset.UTC).minusDays(1), "Steam peak")), true, null));
+        when(service.fps()).thenThrow(new DataAccessResourceFailureException("Redis unavailable"));
+        when(service.indie()).thenReturn(DiscoverySection.unavailable());
+        when(service.featured(any(), any(), any(), any())).thenCallRealMethod();
         mvc.perform(get("/api/discovery/home"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.popular.available").value(false))
                 .andExpect(jsonPath("$.upcoming.games[0].igdbId").value(42))
                 .andExpect(jsonPath("$.upcoming.games.length()").value(1))
+                .andExpect(jsonPath("$.steam.games[0].igdbId").value(100))
+                .andExpect(jsonPath("$.fps.available").value(false))
+                .andExpect(jsonPath("$.featured.igdbId").value(100))
                 .andExpect(jsonPath("$.library").doesNotExist());
+    }
+
+    @Test
+    @WithMockUser
+    void thematicCollectionsPreferUnseenGamesWithoutChangingSteamOrder() throws Exception {
+        DiscoveryGame shared = new DiscoveryGame(1, "Shared", null, null, "IGDB");
+        DiscoveryGame distinct = new DiscoveryGame(2, "Distinct", null, null, "IGDB");
+        when(service.popular()).thenReturn(DiscoverySection.unavailable());
+        when(service.upcoming()).thenReturn(DiscoverySection.unavailable());
+        when(service.steam()).thenReturn(new DiscoverySection(List.of(shared), true, null));
+        when(service.fps()).thenReturn(new DiscoverySection(List.of(shared, distinct), true, null));
+        when(service.indie()).thenReturn(DiscoverySection.unavailable());
+
+        mvc.perform(get("/api/discovery/home"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.steam.games[0].igdbId").value(1))
+                .andExpect(jsonPath("$.fps.games[0].igdbId").value(2))
+                .andExpect(jsonPath("$.fps.games[1].igdbId").value(1));
     }
 
     @Test

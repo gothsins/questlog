@@ -26,10 +26,16 @@ class DiscoveryCacheTest {
     @EnableCaching
     static class CacheTestConfiguration {
         @Bean CacheManager cacheManager() {
-            return new ConcurrentMapCacheManager("discoveryPopular", "discoveryUpcoming", "discoveryGameDetails");
+            return new ConcurrentMapCacheManager("discoveryPopular", "discoveryUpcoming", "discoverySteam",
+                    "discoveryFps", "discoveryIndie", "discoveryGenres", "discoveryFirstPerson", "discoveryGameDetails");
         }
         @Bean IgdbClient igdbClient() { return mock(IgdbClient.class); }
-        @Bean DiscoveryService discoveryService(IgdbClient client) { return new DiscoveryService(client); }
+        @Bean DiscoveryTaxonomyService discoveryTaxonomyService(IgdbClient client) {
+            return new DiscoveryTaxonomyService(client);
+        }
+        @Bean DiscoveryService discoveryService(IgdbClient client, DiscoveryTaxonomyService taxonomy) {
+            return new DiscoveryService(client, taxonomy);
+        }
         @Bean DiscoveryGameSource discoveryGameSource(IgdbClient client) { return new DiscoveryGameSource(client); }
     }
 
@@ -87,5 +93,39 @@ class DiscoveryCacheTest {
         assertEquals("co123", restored.cover().imageId());
         assertEquals("sc123", restored.screenshots().getFirst().imageId());
         assertEquals("M7lc1UVf-VE", restored.videos().getFirst().videoId());
+    }
+
+    @Test
+    void steamAndVisitsHaveSeparateSuccessfulCaches() {
+        try (var context = new AnnotationConfigApplicationContext(CacheTestConfiguration.class)) {
+            IgdbClient client = context.getBean(IgdbClient.class);
+            DiscoveryService service = context.getBean(DiscoveryService.class);
+            when(client.query(eq("/popularity_primitives"), anyString(), eq(IgdbPopularityPrimitive[].class)))
+                    .thenReturn(List.of());
+
+            service.popular();
+            service.popular();
+            service.steam();
+            service.steam();
+
+            verify(client).query(eq("/popularity_primitives"), contains("popularity_type = 1"),
+                    eq(IgdbPopularityPrimitive[].class));
+            verify(client).query(eq("/popularity_primitives"), contains("popularity_type = 5"),
+                    eq(IgdbPopularityPrimitive[].class));
+        }
+    }
+
+    @Test
+    void taxonomyAndSectionsRoundTripThroughTypedRedisSerialization() {
+        JsonMapper mapper = JsonMapper.builder().build();
+        var genreSerializer = new JacksonJsonRedisSerializer<>(mapper, DiscoveryGenres.class);
+        var sectionSerializer = new JacksonJsonRedisSerializer<>(mapper, DiscoverySection.class);
+        DiscoveryGenres genres = new DiscoveryGenres(5, 32);
+        DiscoverySection section = new DiscoverySection(List.of(
+                new DiscoveryGame(99, "Game", "https://images.igdb.com/cover.jpg", null,
+                        "IGDB PopScore · pico Steam em 24 horas")), true, null);
+
+        assertEquals(genres, genreSerializer.deserialize(genreSerializer.serialize(genres)));
+        assertEquals(section, sectionSerializer.deserialize(sectionSerializer.serialize(section)));
     }
 }

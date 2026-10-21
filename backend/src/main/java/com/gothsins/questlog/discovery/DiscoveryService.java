@@ -21,21 +21,33 @@ public class DiscoveryService {
     // IGDB PopScore documents type 1 as IGDB page Visits.
     // https://api-docs.igdb.com/#how-to-use-popularity-api
     static final int IGDB_VISITS_TYPE = 1;
+    static final int STEAM_PEAK_TYPE = 5;
     static final int MAIN_GAME_TYPE = 0;
     private static final String COVER_BASE = "https://images.igdb.com/igdb/image/upload/t_cover_big_2x/";
 
     private final IgdbClient client;
+    private final DiscoveryTaxonomyService taxonomy;
 
-    public DiscoveryService(IgdbClient client) {
+    public DiscoveryService(IgdbClient client, DiscoveryTaxonomyService taxonomy) {
         this.client = client;
+        this.taxonomy = taxonomy;
     }
 
     @Cacheable(value = "discoveryPopular", key = "'igdb-visits-v1'", sync = true)
     public DiscoverySection popular() {
+        return rankedGames(IGDB_VISITS_TYPE, "IGDB PopScore · visitas às páginas");
+    }
+
+    @Cacheable(value = "discoverySteam", key = "'steam-peak-v1'", sync = true)
+    public DiscoverySection steam() {
+        return rankedGames(STEAM_PEAK_TYPE, "IGDB PopScore · pico Steam em 24 horas");
+    }
+
+    private DiscoverySection rankedGames(int popularityType, String source) {
         List<IgdbPopularityPrimitive> primitives = client.query(
                 "/popularity_primitives",
                 "fields game_id,value,calculated_at; where popularity_type = "
-                        + IGDB_VISITS_TYPE + "; sort value desc; limit 30;",
+                        + popularityType + "; sort value desc; limit 40;",
                 IgdbPopularityPrimitive[].class);
 
         List<IgdbPopularityPrimitive> ranked = primitives.stream()
@@ -48,7 +60,7 @@ public class DiscoveryService {
                 .distinct().reduce((a, b) -> a + "," + b).orElseThrow();
         List<IgdbDiscoveryGame> details = client.query("/games",
                 "fields id,name,first_release_date,game_type,version_parent,parent_game,cover.image_id; "
-                        + "where id = (" + ids + "); limit 30;",
+                        + "where id = (" + ids + "); limit 40;",
                 IgdbDiscoveryGame[].class);
         if (details.isEmpty()) {
             throw new IllegalStateException("IGDB did not return details for ranked games");
@@ -61,13 +73,132 @@ public class DiscoveryService {
         for (IgdbPopularityPrimitive primitive : ranked) {
             if (!seen.add(primitive.gameId())) continue;
             IgdbDiscoveryGame game = byId.get(primitive.gameId());
-            if (game != null) games.add(normalize(game, "IGDB PopScore · visitas às páginas"));
+            if (game != null) games.add(normalize(game, source));
             if (games.size() == 10) break;
         }
         Instant calculatedAt = ranked.stream().map(IgdbPopularityPrimitive::calculatedAt)
                 .filter(value -> value != null && value > 0)
                 .map(Instant::ofEpochSecond).max(Comparator.naturalOrder()).orElse(null);
         return new DiscoverySection(games, true, calculatedAt);
+    }
+
+    @Cacheable(value = "discoveryFps", key = "'first-person-shooter-v1'", sync = true)
+    public DiscoverySection fps() {
+        long shooterId = taxonomy.genres().shooterId();
+        long firstPersonId = taxonomy.firstPersonId();
+        long now = Instant.now().getEpochSecond();
+        List<IgdbDiscoveryGame> candidates = client.query("/games",
+                collectionFields() + " where genres = " + shooterId
+                        + " & player_perspectives = " + firstPersonId
+                        + commonCollectionFilters(now)
+                        + "; sort total_rating_count desc; limit 70;",
+                IgdbDiscoveryGame[].class);
+        List<DiscoveryGame> games = candidates.stream()
+                .filter(this::isMainGame)
+                .filter(game -> isReleased(game, now))
+                .filter(game -> contains(game.genres(), shooterId))
+                .filter(game -> contains(game.playerPerspectives(), firstPersonId))
+                .filter(game -> hasReliableRating(game, 20))
+                .sorted(Comparator.comparing(IgdbDiscoveryGame::totalRatingCount).reversed()
+                        .thenComparing(IgdbDiscoveryGame::id))
+                .collect(java.util.stream.Collectors.toMap(IgdbDiscoveryGame::id,
+                        game -> game, (first, duplicate) -> first,
+                        java.util.LinkedHashMap::new))
+                .values().stream().limit(10)
+                .map(game -> normalize(game, "IGDB · Shooter em primeira pessoa"))
+                .toList();
+        return new DiscoverySection(games, true, Instant.now());
+    }
+
+    @Cacheable(value = "discoveryIndie", key = "'indie-v1'", sync = true)
+    public DiscoverySection indie() {
+        long indieId = taxonomy.genres().indieId();
+        long now = Instant.now().getEpochSecond();
+        String filters = " where genres = " + indieId + commonCollectionFilters(now) + "; ";
+        List<IgdbDiscoveryGame> established = client.query("/games",
+                collectionFields() + filters + "sort total_rating_count desc; limit 70;",
+                IgdbDiscoveryGame[].class);
+        List<IgdbDiscoveryGame> acclaimed = client.query("/games",
+                collectionFields() + filters + "sort total_rating desc; limit 70;",
+                IgdbDiscoveryGame[].class);
+        List<IgdbDiscoveryGame> counted = eligibleIndies(established, indieId, now)
+                .stream().sorted(Comparator.comparing(IgdbDiscoveryGame::totalRatingCount).reversed())
+                .toList();
+        List<IgdbDiscoveryGame> rated = eligibleIndies(acclaimed, indieId, now)
+                .stream().filter(game -> game.totalRating() != null)
+                .sorted(Comparator.comparing(IgdbDiscoveryGame::totalRating).reversed())
+                .toList();
+        List<DiscoveryGame> games = mixIndies(counted, rated).stream()
+                .map(game -> normalize(game, "IGDB · gênero Indie"))
+                .toList();
+        return new DiscoverySection(games, true, Instant.now());
+    }
+
+    public DiscoveryGame featured(DiscoverySection steam, DiscoverySection popular,
+                                  DiscoverySection fps, DiscoverySection indie) {
+        for (DiscoverySection section : List.of(steam, popular, fps, indie)) {
+            if (!section.available()) continue;
+            for (DiscoveryGame game : section.games()) {
+                if (game.coverUrl() != null && game.releaseDate() != null) return game;
+            }
+        }
+        return null;
+    }
+
+    private String collectionFields() {
+        return "fields id,name,first_release_date,game_type,version_parent,parent_game,"
+                + "cover.image_id,genres,player_perspectives,total_rating,total_rating_count;";
+    }
+
+    private String commonCollectionFilters(long now) {
+        return " & game_type = " + MAIN_GAME_TYPE
+                + " & version_parent = null & parent_game = null"
+                + " & first_release_date < " + now
+                + " & total_rating_count >= 20";
+    }
+
+    private boolean contains(List<Long> values, long id) {
+        return values != null && values.contains(id);
+    }
+
+    private boolean isReleased(IgdbDiscoveryGame game, long now) {
+        return game.firstReleaseDate() != null && game.firstReleaseDate() > 0
+                && game.firstReleaseDate() < now;
+    }
+
+    private boolean hasReliableRating(IgdbDiscoveryGame game, int minimum) {
+        return game.totalRatingCount() != null && game.totalRatingCount() >= minimum;
+    }
+
+    private List<IgdbDiscoveryGame> eligibleIndies(List<IgdbDiscoveryGame> candidates,
+                                                    long indieId, long now) {
+        return candidates.stream()
+                .filter(this::isMainGame)
+                .filter(game -> isReleased(game, now))
+                .filter(game -> contains(game.genres(), indieId))
+                .filter(game -> hasReliableRating(game, 50))
+                .filter(game -> game.cover() != null && validImage(game.cover().imageId()))
+                .toList();
+    }
+
+    private List<IgdbDiscoveryGame> mixIndies(List<IgdbDiscoveryGame> established,
+                                               List<IgdbDiscoveryGame> acclaimed) {
+        List<IgdbDiscoveryGame> selected = new ArrayList<>();
+        Set<Long> ids = new HashSet<>();
+        int establishedIndex = 0;
+        int acclaimedIndex = 0;
+        while (selected.size() < 10
+                && (establishedIndex < established.size() || acclaimedIndex < acclaimed.size())) {
+            if (establishedIndex < established.size()) {
+                IgdbDiscoveryGame game = established.get(establishedIndex++);
+                if (ids.add(game.id())) selected.add(game);
+            }
+            if (selected.size() < 10 && acclaimedIndex < acclaimed.size()) {
+                IgdbDiscoveryGame game = acclaimed.get(acclaimedIndex++);
+                if (ids.add(game.id())) selected.add(game);
+            }
+        }
+        return selected;
     }
 
     @Cacheable(value = "discoveryUpcoming", key = "'main-games-v1'", sync = true)
@@ -105,8 +236,12 @@ public class DiscoveryService {
     private DiscoveryGame normalize(IgdbDiscoveryGame game, String source) {
         String image = game.cover() == null ? null : game.cover().imageId();
         return new DiscoveryGame(game.id(), game.name(),
-                image == null || image.isBlank() ? null : COVER_BASE + image + ".jpg",
+                validImage(image) ? COVER_BASE + image + ".jpg" : null,
                 releaseDate(game.firstReleaseDate()), source);
+    }
+
+    private boolean validImage(String image) {
+        return image != null && image.matches("[A-Za-z0-9_-]+");
     }
 
     private LocalDate releaseDate(Long epochSeconds) {
