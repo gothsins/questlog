@@ -15,4 +15,8 @@ export interface DiscoverySection {
 export interface HomeDiscovery {
     popular: DiscoverySection
     upcoming: DiscoverySection
+    steam: DiscoverySection
+    fps: DiscoverySection
+    indie: DiscoverySection
+    featured: DiscoveryGame | null
 }
