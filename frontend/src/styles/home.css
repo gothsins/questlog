@@ -8,7 +8,9 @@
 .home-hero p{max-width:500px;margin:0 0 30px;color:#c1b9cf;line-height:1.65;font-size:1.02rem}
 .home-primary{display:inline-flex;gap:24px;align-items:center;padding:14px 20px;border-radius:12px;background:#9a70ed;color:#171020;text-decoration:none;font-weight:800;transition:transform .2s,background .2s}
 .home-primary:hover{background:#bea0ff;transform:translateY(-2px)}
-.home-feature{position:relative;display:flex;min-height:300px;height:100%;overflow:hidden;border-radius:20px;background:#312544;color:#fff;text-decoration:none;border:1px solid rgba(205,180,255,.25)}
+.home-feature{position:relative;display:flex;flex-direction:column;min-height:300px;height:100%;overflow:hidden;border-radius:20px;background:#312544;color:#fff;text-decoration:none;border:1px solid rgba(205,180,255,.25)}
+.home-feature__link{position:relative;display:flex;flex:1;min-height:245px;color:inherit;text-decoration:none;overflow:hidden}
+.home-feature__actions{position:relative;z-index:1;padding:12px;background:#1c1529;border-top:1px solid rgba(205,180,255,.17)}
 .home-feature__art{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(140deg,#523978,#20172f)}
 .home-feature__art img{width:100%;height:100%;object-fit:cover;object-position:center 28%;filter:brightness(.7);transition:transform .35s}
 .home-feature:hover .home-feature__art img{transform:scale(1.04)}
@@ -21,10 +23,34 @@
 .home-section{margin-top:clamp(42px,6vw,74px)}
 .home-section__heading{display:flex;justify-content:space-between;align-items:end;gap:18px;margin-bottom:22px}
 .home-section h2{margin:6px 0 0;font-size:clamp(1.6rem,2.7vw,2.3rem);letter-spacing:-.035em}
+.home-section__heading p{margin:8px 0 0;color:#bcb1cb;font-size:.92rem;line-height:1.5}
 .home-section__heading>a{color:#bd9bff;text-decoration:none;font-size:.87rem;font-weight:700;white-space:nowrap}
 .home-section__heading>a:hover{text-decoration:underline}
 .home-rail{display:grid;grid-auto-columns:clamp(160px,18vw,210px);grid-auto-flow:column;gap:16px;overflow-x:auto;padding:4px 3px 16px;scroll-snap-type:x proximity;scrollbar-color:#72539c #21192e}
+.home-editorial{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}
+.home-editorial .home-game:first-child{grid-column:span 2;grid-row:span 2;background:linear-gradient(155deg,#312443,#1d1729)}
+.home-editorial .home-game:first-child .home-cover{aspect-ratio:3/4}
+.home-editorial .home-game:first-child .home-game__meta{padding:20px}
+.home-editorial .home-game:first-child strong{font-size:1.35rem}
+.home-editorial .home-game:nth-child(n+8){display:none}
+.home-section--editorial{padding:clamp(20px,3vw,34px);border:1px solid rgba(200,171,255,.14);border-radius:24px;background:linear-gradient(140deg,rgba(111,67,173,.09),rgba(28,22,40,.45))}
+.home-section--editorial .home-game{min-width:0}
+.home-section--editorial .home-cover{aspect-ratio:3/3.4}
+.home-section--editorial .home-game strong{min-height:0}
 .home-game{display:flex;flex-direction:column;min-width:0;color:inherit;text-decoration:none;scroll-snap-align:start;border-radius:16px;overflow:hidden;background:#211a2f;border:1px solid rgba(200,171,255,.15);transition:transform .2s,border-color .2s,box-shadow .2s}
+.home-game__link{display:flex;flex:1;flex-direction:column;min-width:0;color:inherit;text-decoration:none}
+.home-game__actions{margin-top:auto;padding:0 10px 11px}
+.home-add{display:inline-flex;align-items:center;justify-content:center;gap:7px;width:100%;min-width:0;min-height:42px;padding:8px 9px;border:1px solid rgba(189,155,255,.45);border-radius:10px;background:#38264e;color:#eadcff;font:inherit;font-size:.74rem;font-weight:800;line-height:1.2;white-space:nowrap;cursor:pointer;transition:background .18s,border-color .18s,color .18s,transform .18s}
+.home-add:hover:not(:disabled){background:#563475;border-color:#c4a5ff;transform:translateY(-1px)}
+.home-add:disabled{cursor:default}
+.home-add--owned{background:#223b35;border-color:#548b73;color:#c0f5d9}
+.home-add__icon{display:grid;place-items:center;flex:none;width:18px;height:18px;border-radius:6px;background:rgba(206,177,255,.17);font-size:1rem;line-height:1}
+.home-add--owned .home-add__icon{background:rgba(138,228,172,.18)}
+.home-add--hero{min-height:46px;font-size:.83rem}
+.home-feedback{position:fixed;right:clamp(16px,4vw,44px);bottom:20px;z-index:20;display:flex;align-items:center;gap:18px;max-width:min(390px,calc(100vw - 32px));padding:14px 16px;border:1px solid #8d6cc8;border-radius:14px;background:#2c213d;box-shadow:0 16px 50px rgba(0,0,0,.45);color:#f4efff;font-size:.9rem;line-height:1.4}
+.home-feedback--success{border-color:#548b73;background:#1e322d}
+.home-feedback button{flex:none;border:0;background:none;color:inherit;font-size:1.25rem;cursor:pointer}
+.home-library-warning{margin-top:24px}
 .home-game:hover{transform:translateY(-4px);border-color:#9d76df;box-shadow:0 12px 32px rgba(8,4,18,.28)}
 .home-cover{display:flex;align-items:center;justify-content:center;width:100%;aspect-ratio:3/4;background:linear-gradient(145deg,#49316c,#20172d);overflow:hidden}
 .home-cover img{width:100%;height:100%;object-fit:cover}
@@ -41,5 +67,6 @@
 @keyframes home-pulse{to{background-position:-200% 0}}
 .home-page a:focus-visible,.home-page button:focus-visible{outline:3px solid #d6bdff;outline-offset:3px}
 @media(max-width:760px){.home-page{padding:20px 16px 70px}.home-hero{grid-template-columns:1fr;padding:28px;min-height:0;gap:26px}.home-hero h1{font-size:clamp(2.5rem,10vw,3.6rem)}.home-feature{min-height:240px;max-height:330px}.home-section__heading{align-items:start}.home-rail{grid-auto-columns:150px}.home-section__heading>a{margin-top:5px}}
+@media(max-width:760px){.home-editorial{grid-auto-flow:column;grid-auto-columns:155px;grid-template-columns:none;overflow-x:auto;padding:3px 3px 16px;scroll-snap-type:x proximity}.home-editorial .home-game:first-child{grid-column:auto;grid-row:auto}.home-editorial .home-game:first-child .home-cover{aspect-ratio:3/3.4}.home-editorial .home-game:nth-child(n+8){display:flex}.home-editorial .home-game:first-child strong{font-size:inherit}.home-section--editorial{padding:20px}}
 @media(max-width:420px){.home-section__heading{flex-wrap:wrap}.home-hero{padding:22px}.home-rail{grid-auto-columns:140px}}
 @media(prefers-reduced-motion:reduce){.home-page *{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}

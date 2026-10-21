@@ -2,6 +2,7 @@
 package com.gothsins.questlog.config;
 
 import com.gothsins.questlog.discovery.DiscoverySection;
+import com.gothsins.questlog.discovery.DiscoveryGenres;
 import com.gothsins.questlog.igdb.IgdbGameDetailsResponse;
 import com.gothsins.questlog.game.dto.GameResponse;
 import com.gothsins.questlog.igdb.dto.IgdbSearchResult;
@@ -149,21 +150,42 @@ public class RedisConfig {
                                         jsonMapper, IgdbGameDetailsResponse.class))
                 );
 
+        RedisCacheConfiguration discoveryGenresConfig = defaultConfig
+                .entryTtl(discoveryTtl)
+                .serializeValuesWith(
+                        RedisSerializationContext.SerializationPair
+                                .fromSerializer(new JacksonJsonRedisSerializer<>(
+                                        jsonMapper, DiscoveryGenres.class))
+                );
+
+        RedisCacheConfiguration discoveryPerspectiveConfig = defaultConfig
+                .entryTtl(discoveryTtl)
+                .serializeValuesWith(
+                        RedisSerializationContext.SerializationPair
+                                .fromSerializer(new JacksonJsonRedisSerializer<>(
+                                        jsonMapper, Long.class))
+                );
+
         return RedisCacheManager
                 .builder(connectionFactory)
                 .cacheDefaults(defaultConfig)
                 .withInitialCacheConfigurations(
-                        Map.of(
-                                "igdbSearch", igdbConfig,
-                                "gamesList", gamesListConfig,
-                                "games", gamesConfig,
-                                "gameMedia", gameMediaConfig,
-                                "steamLinks", steamLinksConfig,
-                                "steamReviews", steamReviewsConfig,
-                                "steamReviewTexts", steamReviewTextsConfig,
-                                "discoveryPopular", discoveryConfig,
-                                "discoveryUpcoming", discoveryConfig,
-                                "discoveryGameDetails", discoveryGameConfig
+                        Map.ofEntries(
+                                Map.entry("igdbSearch", igdbConfig),
+                                Map.entry("gamesList", gamesListConfig),
+                                Map.entry("games", gamesConfig),
+                                Map.entry("gameMedia", gameMediaConfig),
+                                Map.entry("steamLinks", steamLinksConfig),
+                                Map.entry("steamReviews", steamReviewsConfig),
+                                Map.entry("steamReviewTexts", steamReviewTextsConfig),
+                                Map.entry("discoveryPopular", discoveryConfig),
+                                Map.entry("discoveryUpcoming", discoveryConfig),
+                                Map.entry("discoverySteam", discoveryConfig),
+                                Map.entry("discoveryFps", discoveryConfig),
+                                Map.entry("discoveryIndie", discoveryConfig),
+                                Map.entry("discoveryGenres", discoveryGenresConfig),
+                                Map.entry("discoveryFirstPerson", discoveryPerspectiveConfig),
+                                Map.entry("discoveryGameDetails", discoveryGameConfig)
                         )
                 )
                 .disableCreateOnMissingCache()

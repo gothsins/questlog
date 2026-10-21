@@ -2,7 +2,7 @@ import { expect, test as base, type BrowserContext, type Page } from '@playwrigh
 import { FRONTEND_ORIGIN, MOCK_API_ORIGIN } from './network'
 import type { GameReview } from '../src/types/reviews'
 import type { LibraryEntry } from '../src/types/library'
-import type { HomeDiscovery } from '../src/types/discovery'
+import type { DiscoveryGame, HomeDiscovery } from '../src/types/discovery'
 
 const date = '2026-01-01T00:00:00'
 
@@ -31,8 +31,36 @@ const image = (color: string) =>
         `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360"><rect width="640" height="360" fill="${color}"/></svg>`,
     )}`
 
+const coverArt = (id: number) => {
+    const hue = (id * 47) % 360
+    const svg = [
+        '<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800">',
+        '<defs><linearGradient id="g" x2="1" y2="1"><stop stop-color="hsl(', hue,
+        ',52%,35%)"/><stop offset="1" stop-color="hsl(', (hue + 80) % 360,
+        ',42%,11%)"/></linearGradient></defs>',
+        '<rect width="600" height="800" fill="url(#g)"/>',
+        '<circle cx="410" cy="240" r="185" fill="none" stroke="#ffffff" stroke-opacity=".28" stroke-width="3"/>',
+        '<circle cx="410" cy="240" r="125" fill="#ffffff" fill-opacity=".1"/>',
+        '<path d="M0 760 275 300 600 800H0" fill="#0d0b1a" fill-opacity=".45"/>',
+        '<path d="M0 620 180 420 390 800H0" fill="#ffffff" fill-opacity=".13"/>',
+        '</svg>',
+    ].join('')
+    return 'data:image/svg+xml,' + encodeURIComponent(svg)
+}
+
+const fixtureGame = (igdbId: number, title: string, releaseDate: string,
+    popularitySource: string | null): DiscoveryGame => ({
+    igdbId, title, coverUrl: coverArt(igdbId), releaseDate, popularitySource,
+})
+
+const extraGames = (start: number, group: string, count: number,
+    source: string, releaseDate = '2024-01-01'): DiscoveryGame[] =>
+    Array.from({ length: count }, (_, index) =>
+        fixtureGame(start + index, group + ' ' + (index + 2), releaseDate, source))
+
 export class MockApi {
     readonly calls: string[] = []
+    readonly importedIgdbIds: number[] = []
     readonly libraryPatches: Partial<LibraryEntry>[] = []
     readonly unexpected: string[] = []
     entries: LibraryEntry[] = [{ ...libraryEntry }]
@@ -40,13 +68,33 @@ export class MockApi {
     discoveryGate: Promise<void> | null = null
     discoveryDetailsStatus: number | null = null
     importStatus: number | null = null
+    importGate: Promise<void> | null = null
+    importConflictEntry: LibraryEntry | null = null
+    libraryStatus: number | null = null
+    libraryGate: Promise<void> | null = null
     discovery: HomeDiscovery = {
         popular: { available: true, updatedAt: '2026-01-01T00:00:00Z', games: [
-            { igdbId: 99, title: 'Elden Ring', coverUrl: null, releaseDate: '2022-02-25', popularitySource: 'IGDB PopScore · visitas às páginas' },
+            fixtureGame(99, 'Elden Ring', '2022-02-25', 'IGDB PopScore · visitas às páginas'),
+            ...extraGames(520, 'IGDB discovery', 4, 'IGDB PopScore · visitas às páginas'),
         ] },
         upcoming: { available: true, updatedAt: '2026-01-01T00:00:00Z', games: [
-            { igdbId: 199, title: 'Future Game', coverUrl: null, releaseDate: '2027-01-01', popularitySource: null },
+            fixtureGame(199, 'Future Game', '2027-01-01', null),
+            ...extraGames(530, 'Upcoming discovery', 4, 'IGDB', '2027-02-01'),
         ] },
+        steam: { available: true, updatedAt: '2026-01-01T00:00:00Z', games: [
+            fixtureGame(299, 'Steam Peak Game', '2024-01-01', 'IGDB PopScore · pico Steam em 24 horas'),
+            ...extraGames(540, 'Steam discovery', 6, 'IGDB PopScore · pico Steam em 24 horas'),
+        ] },
+        fps: { available: true, updatedAt: '2026-01-01T00:00:00Z', games: [
+            fixtureGame(399, 'First Person Game', '2023-01-01', 'IGDB · Shooter em primeira pessoa'),
+            ...extraGames(550, 'FPS discovery', 6, 'IGDB · Shooter em primeira pessoa'),
+        ] },
+        indie: { available: true, updatedAt: '2026-01-01T00:00:00Z', games: [
+            fixtureGame(499, 'Indie Game', '2021-01-01', 'IGDB · gênero Indie'),
+            ...extraGames(560, 'Indie discovery', 6, 'IGDB · gênero Indie'),
+        ] },
+        featured: fixtureGame(299, 'Steam Peak Game', '2024-01-01',
+            'IGDB PopScore · pico Steam em 24 horas'),
     }
     mediaFails = false
     gameFails = false
@@ -117,24 +165,37 @@ export class MockApi {
                 return json(this.profile)
             }
             if (call === 'GET /api/library') {
-                return this.libraryUnauthorized
-                    ? json({ message: 'Authentication required', status: 401 }, 401)
+                if (this.libraryGate) await this.libraryGate
+                if (this.libraryUnauthorized) {
+                    return json({ message: 'Authentication required', status: 401 }, 401)
+                }
+                return this.libraryStatus
+                    ? json({ status: this.libraryStatus }, this.libraryStatus)
                     : json(this.entries)
             }
             if (call === 'GET /api/discovery/home') {
                 if (this.discoveryGate) await this.discoveryGate
                 return this.discoveryFails ? json({ status: 503 }, 503) : json(this.discovery)
             }
-            const discoveryDetails = /^GET \/api\/discovery\/games\/(99|199)$/.exec(call)
+            const discoveryDetails = /^GET \/api\/discovery\/games\/(99|199|299|399|499|5[2-6]\d)$/.exec(call)
             if (discoveryDetails) {
                 if (this.discoveryDetailsStatus) return json({ status: this.discoveryDetailsStatus }, this.discoveryDetailsStatus)
                 const isPopular = discoveryDetails[1] === '99'
+                const titles: Record<string, string> = {
+                    '99': 'Elden Ring', '199': 'Future Game', '299': 'Steam Peak Game',
+                    '399': 'First Person Game', '499': 'Indie Game',
+                }
+                const selectedGame = [
+                    ...this.discovery.popular.games, ...this.discovery.upcoming.games,
+                    ...this.discovery.steam.games, ...this.discovery.fps.games,
+                    ...this.discovery.indie.games,
+                ].find(item => item.igdbId === Number(discoveryDetails[1]))
                 return json({
                     igdbId: Number(discoveryDetails[1]),
                     gameId: isPopular ? 42 : null,
-                    title: isPopular ? 'Elden Ring' : 'Future Game',
+                    title: selectedGame?.title ?? titles[discoveryDetails[1]],
                     releaseDate: isPopular ? '2022-02-25' : null,
-                    coverUrl: null,
+                    coverUrl: selectedGame?.coverUrl ?? null,
                     summary: isPopular ? 'Uma jornada por terras desconhecidas.' : null,
                     genres: isPopular ? ['RPG'] : [],
                     screenshots: isPopular ? [image('#31234a'), image('#57429a')] : [],
@@ -200,11 +261,24 @@ export class MockApi {
                     releaseDate: game.releaseDate, coverUrl: null }])
             }
             if (call === 'POST /api/library/import') {
-                if (this.importStatus) return json({ status: this.importStatus }, this.importStatus)
+                if (this.importGate) await this.importGate
                 const { igdbId } = request.postDataJSON() as { igdbId: number }
-                const entry = igdbId === 199
-                    ? { ...libraryEntry, id: 2, gameId: 143, igdbId: 199, title: 'Future Game' }
-                    : { ...libraryEntry }
+                this.importedIgdbIds.push(igdbId)
+                if (this.importStatus === 409 && this.importConflictEntry) {
+                    this.entries = [...this.entries.filter(entry => entry.id !== this.importConflictEntry?.id),
+                        this.importConflictEntry]
+                }
+                if (this.importStatus) return json({ status: this.importStatus }, this.importStatus)
+                const selectedGame = [
+                    ...this.discovery.popular.games, ...this.discovery.upcoming.games,
+                    ...this.discovery.steam.games, ...this.discovery.fps.games,
+                    ...this.discovery.indie.games,
+                ].find(item => item.igdbId === igdbId)
+                const entry = igdbId === 99 ? { ...libraryEntry }
+                    : igdbId === 199
+                        ? { ...libraryEntry, id: 2, gameId: 143, igdbId: 199, title: 'Future Game' }
+                        : { ...libraryEntry, id: igdbId, gameId: igdbId + 1000,
+                            igdbId, title: selectedGame?.title ?? 'Synthetic game' }
                 this.entries = [...this.entries.filter(item => item.igdbId !== igdbId), entry]
                 return json(entry, 201)
             }

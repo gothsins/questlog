@@ -15,11 +15,13 @@ public class IgdbClient {
     private final RestClient restClient;
     private final TwitchAuthService twitchAuthService;
     private final IgdbProperties properties;
+    private final IgdbRequestLimiter requestLimiter;
 
     public IgdbClient(
             RestClient.Builder restClientBuilder,
             TwitchAuthService twitchAuthService,
-            IgdbProperties properties
+            IgdbProperties properties,
+            IgdbRequestLimiter requestLimiter
     ) {
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         requestFactory.setConnectTimeout(3000);
@@ -31,17 +33,18 @@ public class IgdbClient {
 
         this.twitchAuthService = twitchAuthService;
         this.properties = properties;
+        this.requestLimiter = requestLimiter;
     }
 
     public <T> List<T> query(String endpoint, String body, Class<T[]> responseType) {
-        T[] response = restClient.post()
+        T[] response = requestLimiter.execute(() -> restClient.post()
                 .uri(endpoint)
                 .header("Client-ID", properties.clientId())
                 .header("Authorization", "Bearer " + twitchAuthService.getAccessToken())
                 .contentType(MediaType.TEXT_PLAIN)
                 .body(body)
                 .retrieve()
-                .body(responseType);
+                .body(responseType));
         if (response == null) {
             throw new IllegalStateException("IGDB returned no response body");
         }
@@ -59,7 +62,7 @@ public class IgdbClient {
                 limit 10;
                 """.formatted(query);
 
-        return restClient
+        return requestLimiter.execute(() -> restClient
                 .post()
                 .uri("/games")
                 .header(
@@ -79,7 +82,7 @@ public class IgdbClient {
                         new ParameterizedTypeReference<
                                 List<IgdbGameResponse>
                                 >() {}
-                );
+                ));
     }
 
     public Optional<IgdbGameResponse> findGameById(Long igdbId) {
@@ -90,7 +93,7 @@ public class IgdbClient {
             limit 1;
             """.formatted(igdbId);
 
-        List<IgdbGameResponse> games = restClient
+        List<IgdbGameResponse> games = requestLimiter.execute(() -> restClient
                 .post()
                 .uri("/games")
                 .header("Client-ID", properties.clientId())
@@ -102,7 +105,7 @@ public class IgdbClient {
                 .body(body)
                 .retrieve()
                 .body(new ParameterizedTypeReference<
-                        List<IgdbGameResponse>>() {});
+                        List<IgdbGameResponse>>() {}));
 
         if (games == null || games.isEmpty()) {
             return Optional.empty();
@@ -131,7 +134,7 @@ public class IgdbClient {
             limit 1;
             """.formatted(igdbId);
 
-        List<IgdbGameDetailsResponse> games = restClient
+        List<IgdbGameDetailsResponse> games = requestLimiter.execute(() -> restClient
                 .post()
                 .uri("/games")
                 .header(
@@ -149,7 +152,7 @@ public class IgdbClient {
                         new ParameterizedTypeReference<
                                 List<IgdbGameDetailsResponse>
                                 >() {}
-                );
+                ));
 
         if (games == null || games.isEmpty()) {
             return Optional.empty();
@@ -167,7 +170,7 @@ public class IgdbClient {
             limit 100;
             """.formatted(igdbId);
 
-        List<IgdbExternalGameResponse> results = restClient
+        List<IgdbExternalGameResponse> results = requestLimiter.execute(() -> restClient
                 .post()
                 .uri("/external_games")
                 .header("Client-ID", properties.clientId())
@@ -182,7 +185,7 @@ public class IgdbClient {
                         new ParameterizedTypeReference<
                                 List<IgdbExternalGameResponse>
                                 >() {}
-                );
+                ));
 
         return results == null ? List.of() : results;
     }
