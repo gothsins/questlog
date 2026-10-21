@@ -60,6 +60,7 @@ const extraGames = (start: number, group: string, count: number,
 
 export class MockApi {
     readonly calls: string[] = []
+    readonly importedIgdbIds: number[] = []
     readonly libraryPatches: Partial<LibraryEntry>[] = []
     readonly unexpected: string[] = []
     entries: LibraryEntry[] = [{ ...libraryEntry }]
@@ -67,6 +68,10 @@ export class MockApi {
     discoveryGate: Promise<void> | null = null
     discoveryDetailsStatus: number | null = null
     importStatus: number | null = null
+    importGate: Promise<void> | null = null
+    importConflictEntry: LibraryEntry | null = null
+    libraryStatus: number | null = null
+    libraryGate: Promise<void> | null = null
     discovery: HomeDiscovery = {
         popular: { available: true, updatedAt: '2026-01-01T00:00:00Z', games: [
             fixtureGame(99, 'Elden Ring', '2022-02-25', 'IGDB PopScore · visitas às páginas'),
@@ -160,8 +165,12 @@ export class MockApi {
                 return json(this.profile)
             }
             if (call === 'GET /api/library') {
-                return this.libraryUnauthorized
-                    ? json({ message: 'Authentication required', status: 401 }, 401)
+                if (this.libraryGate) await this.libraryGate
+                if (this.libraryUnauthorized) {
+                    return json({ message: 'Authentication required', status: 401 }, 401)
+                }
+                return this.libraryStatus
+                    ? json({ status: this.libraryStatus }, this.libraryStatus)
                     : json(this.entries)
             }
             if (call === 'GET /api/discovery/home') {
@@ -252,11 +261,24 @@ export class MockApi {
                     releaseDate: game.releaseDate, coverUrl: null }])
             }
             if (call === 'POST /api/library/import') {
-                if (this.importStatus) return json({ status: this.importStatus }, this.importStatus)
+                if (this.importGate) await this.importGate
                 const { igdbId } = request.postDataJSON() as { igdbId: number }
-                const entry = igdbId === 199
-                    ? { ...libraryEntry, id: 2, gameId: 143, igdbId: 199, title: 'Future Game' }
-                    : { ...libraryEntry }
+                this.importedIgdbIds.push(igdbId)
+                if (this.importStatus === 409 && this.importConflictEntry) {
+                    this.entries = [...this.entries.filter(entry => entry.id !== this.importConflictEntry?.id),
+                        this.importConflictEntry]
+                }
+                if (this.importStatus) return json({ status: this.importStatus }, this.importStatus)
+                const selectedGame = [
+                    ...this.discovery.popular.games, ...this.discovery.upcoming.games,
+                    ...this.discovery.steam.games, ...this.discovery.fps.games,
+                    ...this.discovery.indie.games,
+                ].find(item => item.igdbId === igdbId)
+                const entry = igdbId === 99 ? { ...libraryEntry }
+                    : igdbId === 199
+                        ? { ...libraryEntry, id: 2, gameId: 143, igdbId: 199, title: 'Future Game' }
+                        : { ...libraryEntry, id: igdbId, gameId: igdbId + 1000,
+                            igdbId, title: selectedGame?.title ?? 'Synthetic game' }
                 this.entries = [...this.entries.filter(item => item.igdbId !== igdbId), entry]
                 return json(entry, 201)
             }
