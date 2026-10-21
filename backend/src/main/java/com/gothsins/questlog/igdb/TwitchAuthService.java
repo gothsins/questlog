@@ -3,6 +3,9 @@ package com.gothsins.questlog.igdb;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.http.MediaType;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 
@@ -41,25 +44,17 @@ public class TwitchAuthService {
             return accessToken;
         }
 
+        MultiValueMap<String, String> credentials = new LinkedMultiValueMap<>();
+        credentials.add("client_id", properties.clientId());
+        credentials.add("client_secret", properties.clientSecret());
+        credentials.add("grant_type", "client_credentials");
+
         TwitchTokenResponse response =
                 restClient
                         .post()
-                        .uri(uriBuilder ->
-                                uriBuilder
-                                        .queryParam(
-                                                "client_id",
-                                                properties.clientId()
-                                        )
-                                        .queryParam(
-                                                "client_secret",
-                                                properties.clientSecret()
-                                        )
-                                        .queryParam(
-                                                "grant_type",
-                                                "client_credentials"
-                                        )
-                                        .build()
-                        )
+                        .uri("")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .body(credentials)
                         .retrieve()
                         .body(TwitchTokenResponse.class);
 
