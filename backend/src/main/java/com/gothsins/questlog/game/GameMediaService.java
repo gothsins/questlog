@@ -47,7 +47,7 @@ public class GameMediaService {
                 .orElseGet(GameMediaResponse::empty);
     }
 
-    private GameMediaResponse toResponse(
+    public GameMediaResponse toResponse(
             IgdbGameDetailsResponse details
     ) {
 

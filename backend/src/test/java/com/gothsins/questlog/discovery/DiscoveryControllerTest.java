@@ -1,6 +1,7 @@
 package com.gothsins.questlog.discovery;
 
 import com.gothsins.questlog.ratelimit.RateLimitService;
+import com.gothsins.questlog.exception.ResourceNotFoundException;
 import com.gothsins.questlog.security.CustomUserDetailsService;
 import com.gothsins.questlog.security.JwtService;
 import com.gothsins.questlog.security.SecurityConfig;
@@ -26,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class DiscoveryControllerTest {
     @Autowired MockMvc mvc;
     @MockitoBean DiscoveryService service;
+    @MockitoBean DiscoveryGameDetailsService gameDetailsService;
     @MockitoBean JwtService jwtService;
     @MockitoBean CustomUserDetailsService userDetailsService;
     @MockitoBean RateLimitService rateLimitService;
@@ -50,5 +52,48 @@ class DiscoveryControllerTest {
                 .andExpect(jsonPath("$.upcoming.games[0].igdbId").value(42))
                 .andExpect(jsonPath("$.upcoming.games.length()").value(1))
                 .andExpect(jsonPath("$.library").doesNotExist());
+    }
+
+    @Test
+    void anonymousDetailsRequestIsRejected() throws Exception {
+        mvc.perform(get("/api/discovery/games/42")).andExpect(status().isUnauthorized());
+        verifyNoInteractions(gameDetailsService);
+    }
+
+    @Test
+    @WithMockUser
+    void invalidIdIsRejectedWithoutProviderAccess() throws Exception {
+        mvc.perform(get("/api/discovery/games/0")).andExpect(status().isBadRequest());
+        mvc.perform(get("/api/discovery/games/not-a-number")).andExpect(status().isBadRequest());
+        verifyNoInteractions(gameDetailsService);
+    }
+
+    @Test
+    @WithMockUser
+    void providerFailureHasSafeResponse() throws Exception {
+        when(gameDetailsService.find(42L)).thenThrow(new IllegalStateException("sensitive provider detail"));
+        mvc.perform(get("/api/discovery/games/42"))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(jsonPath("$.message").value("IGDB temporarily unavailable"));
+    }
+
+    @Test
+    @WithMockUser
+    void detailsReturnDistinctIgdbAndInternalIds() throws Exception {
+        when(gameDetailsService.find(99L)).thenReturn(new DiscoveryGameDetailsResponse(
+                99L, 42L, "Elden Ring", null, null, "Journey", List.of("RPG"), List.of(), null));
+        mvc.perform(get("/api/discovery/games/99"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.igdbId").value(99))
+                .andExpect(jsonPath("$.gameId").value(42))
+                .andExpect(jsonPath("$.summary").value("Journey"));
+    }
+
+    @Test
+    @WithMockUser
+    void missingExternalGameReturnsNotFound() throws Exception {
+        when(gameDetailsService.find(99L)).thenThrow(new ResourceNotFoundException("Game not found in IGDB"));
+        mvc.perform(get("/api/discovery/games/99"))
+                .andExpect(status().isNotFound());
     }
 }

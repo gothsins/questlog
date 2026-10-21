@@ -121,6 +121,8 @@ public class IgdbClient {
                 id,
                 name,
                 summary,
+                first_release_date,
+                cover.image_id,
                 genres.name,
                 screenshots.image_id,
                 videos.name,

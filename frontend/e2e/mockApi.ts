@@ -38,6 +38,8 @@ export class MockApi {
     entries: LibraryEntry[] = [{ ...libraryEntry }]
     discoveryFails = false
     discoveryGate: Promise<void> | null = null
+    discoveryDetailsStatus: number | null = null
+    importStatus: number | null = null
     discovery: HomeDiscovery = {
         popular: { available: true, updatedAt: '2026-01-01T00:00:00Z', games: [
             { igdbId: 99, title: 'Elden Ring', coverUrl: null, releaseDate: '2022-02-25', popularitySource: 'IGDB PopScore · visitas às páginas' },
@@ -123,12 +125,28 @@ export class MockApi {
                 if (this.discoveryGate) await this.discoveryGate
                 return this.discoveryFails ? json({ status: 503 }, 503) : json(this.discovery)
             }
-            if (call === 'GET /api/games/42/reviews') {
+            const discoveryDetails = /^GET \/api\/discovery\/games\/(99|199)$/.exec(call)
+            if (discoveryDetails) {
+                if (this.discoveryDetailsStatus) return json({ status: this.discoveryDetailsStatus }, this.discoveryDetailsStatus)
+                const isPopular = discoveryDetails[1] === '99'
+                return json({
+                    igdbId: Number(discoveryDetails[1]),
+                    gameId: isPopular ? 42 : null,
+                    title: isPopular ? 'Elden Ring' : 'Future Game',
+                    releaseDate: isPopular ? '2022-02-25' : null,
+                    coverUrl: null,
+                    summary: isPopular ? 'Uma jornada por terras desconhecidas.' : null,
+                    genres: isPopular ? ['RPG'] : [],
+                    screenshots: isPopular ? [image('#31234a'), image('#57429a')] : [],
+                    trailerVideoId: isPopular ? 'M7lc1UVf-VE' : null,
+                })
+            }
+            if (call === 'GET /api/games/42/reviews' || call === 'GET /api/games/143/reviews') {
                 return this.reviewListStatus
                     ? json({ status: this.reviewListStatus }, this.reviewListStatus)
                     : json(this.reviews)
             }
-            if (call === 'GET /api/library/1/review') {
+            if (call === 'GET /api/library/1/review' || call === 'GET /api/library/2/review') {
                 if (this.myReviewStatus) return json({ status: this.myReviewStatus }, this.myReviewStatus)
                 return this.myReview
                     ? json(this.myReview)
@@ -182,11 +200,19 @@ export class MockApi {
                     releaseDate: game.releaseDate, coverUrl: null }])
             }
             if (call === 'POST /api/library/import') {
-                this.entries = [{ ...libraryEntry }]
-                return json(this.entries[0], 201)
+                if (this.importStatus) return json({ status: this.importStatus }, this.importStatus)
+                const { igdbId } = request.postDataJSON() as { igdbId: number }
+                const entry = igdbId === 199
+                    ? { ...libraryEntry, id: 2, gameId: 143, igdbId: 199, title: 'Future Game' }
+                    : { ...libraryEntry }
+                this.entries = [...this.entries.filter(item => item.igdbId !== igdbId), entry]
+                return json(entry, 201)
             }
             if (call === 'GET /api/games/42') {
                 return this.gameFails ? json({ status: 503 }, 503) : json(game)
+            }
+            if (call === 'GET /api/games/143') {
+                return json({ id: 143, title: 'Future Game', releaseDate: null, coverUrl: null })
             }
             if (call === 'GET /api/games/42/media') {
                 return this.mediaFails ? json({ status: 503 }, 503) : json({
@@ -196,12 +222,15 @@ export class MockApi {
                     trailerVideoId: null,
                 })
             }
-            if (call === 'GET /api/games/42/steam-reviews') {
+            if (call === 'GET /api/games/143/media') {
+                return json({ summary: null, genres: [], screenshots: [], trailerVideoId: null })
+            }
+            if (call === 'GET /api/games/42/steam-reviews' || call === 'GET /api/games/143/steam-reviews') {
                 return json({ steamAppId: null, available: false,
                     reviewScoreDescription: null, totalPositive: null,
                     totalNegative: null, totalReviews: null, positivePercentage: null })
             }
-            if (call === 'GET /api/games/42/steam-review-texts') {
+            if (call === 'GET /api/games/42/steam-review-texts' || call === 'GET /api/games/143/steam-review-texts') {
                 return json({ steamAppId: null, available: false,
                     reviews: [], nextCursor: null })
             }

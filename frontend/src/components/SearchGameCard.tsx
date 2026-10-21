@@ -1,5 +1,6 @@
 
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import type { IgdbSearchResult } from '../types/igdb'
 import '../styles/search-game-card.css'
 
@@ -28,7 +29,7 @@ function SearchGameCard({
 
     return (
         <article className="signature-card">
-            <div className="signature-card__artwork">
+            <Link className="signature-card__artwork" to={`/games/igdb/${game.igdbId}`} aria-label={`Conhecer ${game.title}`}>
                 {coverUrl ? (
                     <img
                         src={coverUrl}
@@ -50,12 +51,10 @@ function SearchGameCard({
                 <span className="signature-card__source">
                     IGDB
                 </span>
-            </div>
+            </Link>
 
             <div className="signature-card__details">
-                <h3 title={game.title}>
-                    {game.title}
-                </h3>
+                <h3 title={game.title}><Link to={`/games/igdb/${game.igdbId}`}>{game.title}</Link></h3>
 
                 <div className="signature-card__metadata">
                     <span>{releaseYear}</span>
