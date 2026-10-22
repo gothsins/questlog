@@ -13,14 +13,16 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    private final String secret;
+    private final SecretKey signingKey;
     private final long expiration;
 
     public JwtService(
             @Value("${security.jwt.secret}") String secret,
             @Value("${security.jwt.expiration}") long expiration
     ) {
-        this.secret = secret;
+        // Fails at startup, not on the first login, when the secret is
+        // missing, not Base64 or shorter than 256 bits.
+        this.signingKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
         this.expiration = expiration;
     }
 
@@ -48,17 +50,10 @@ public class JwtService {
             String username
     ) {
 
-        String tokenUsername =
-                extractUsername(token);
+        Claims claims = extractClaims(token);
 
-        return tokenUsername.equals(username)
-                && !isTokenExpired(token);
-    }
-
-    private boolean isTokenExpired(String token) {
-        return extractClaims(token)
-                .getExpiration()
-                .before(new Date());
+        return claims.getSubject().equals(username)
+                && !claims.getExpiration().before(new Date());
     }
 
     private Claims extractClaims(String token) {
@@ -71,10 +66,6 @@ public class JwtService {
     }
 
     private SecretKey getSigningKey() {
-
-        byte[] keyBytes =
-                Decoders.BASE64.decode(secret);
-
-        return Keys.hmacShaKeyFor(keyBytes);
+        return signingKey;
     }
 }
