@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { useEndSession } from '../hooks/useEndSession'
+import { importIgdbGame, useLibraryQuery } from '../api/library'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { authenticatedFetch } from '../api/client'
@@ -18,18 +20,12 @@ interface DiscoveryGameDetails {
     trailerVideoId: string | null
 }
 
-async function loadLibrary(signal?: AbortSignal): Promise<LibraryEntry[]> {
-    const response = await authenticatedFetch('/api/library', { signal })
-    if (response.status === 401 || response.status === 403) throw new Error('SESSION_EXPIRED')
-    if (!response.ok) throw new Error('LIBRARY_UNAVAILABLE')
-    return response.json() as Promise<LibraryEntry[]>
-}
-
 function DiscoveryGameDetailsPage() {
     const { igdbId } = useParams()
     const id = Number(igdbId)
     const validId = Number.isSafeInteger(id) && id > 0
     const navigate = useNavigate()
+    const endSession = useEndSession()
     const queryClient = useQueryClient()
     const [feedback, setFeedback] = useState('')
 
@@ -46,25 +42,10 @@ function DiscoveryGameDetailsPage() {
             return response.json() as Promise<DiscoveryGameDetails>
         },
     })
-    const library = useQuery<LibraryEntry[]>({
-        queryKey: ['library'],
-        queryFn: ({ signal }) => loadLibrary(signal),
-        enabled: validId && details.isSuccess,
-        staleTime: 30_000,
-        retry: false,
-    })
+    const library = useLibraryQuery({ enabled: validId && details.isSuccess })
 
     const importGame = useMutation<LibraryEntry, Error>({
-        mutationFn: async () => {
-            const response = await authenticatedFetch('/api/library/import', {
-                method: 'POST',
-                body: JSON.stringify({ igdbId: id }),
-            })
-            if (response.status === 401 || response.status === 403) throw new Error('SESSION_EXPIRED')
-            if (response.status === 409) throw new Error('ALREADY_IN_LIBRARY')
-            if (!response.ok) throw new Error('IMPORT_FAILED')
-            return response.json() as Promise<LibraryEntry>
-        },
+        mutationFn: () => importIgdbGame(id),
         onSuccess: (entry) => {
             queryClient.setQueryData<LibraryEntry[]>(['library'], current =>
                 current?.some(item => item.id === entry.id) ? current : [...(current ?? []), entry])
@@ -87,11 +68,9 @@ function DiscoveryGameDetailsPage() {
 
     useEffect(() => {
         if ([details.error, library.error, importGame.error].some(error => error?.message === 'SESSION_EXPIRED')) {
-            sessionStorage.removeItem('questlog_token')
-            queryClient.clear()
-            navigate('/login', { replace: true })
+            endSession()
         }
-    }, [details.error, library.error, importGame.error, navigate, queryClient])
+    }, [details.error, library.error, importGame.error, endSession])
 
     if (!validId) {
         return <main className="game-details">

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useEndSession } from '../hooks/useEndSession'
+import { Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
     deleteMyReview,
@@ -20,7 +21,7 @@ import { removeReview as removeReviewFromCache, upsertReview } from './reviewCac
 import '../styles/game-reviews.css'
 
 export default function GameReviewsSection({ gameId }: { gameId: number }) {
-    const navigate = useNavigate()
+    const endSession = useEndSession()
     const queryClient = useQueryClient()
     const [editorMode, setEditorMode] = useState<'create' | 'edit' | null>(null)
     const [draft, setDraft] = useState('')
@@ -54,19 +55,15 @@ export default function GameReviewsSection({ gameId }: { gameId: number }) {
     })
 
     function expireSession() {
-        sessionStorage.removeItem('questlog_token')
-        queryClient.clear()
-        navigate('/login', { replace: true })
+        endSession()
     }
 
     useEffect(() => {
         const errors = [communityQuery.error, libraryQuery.error, myReviewQuery.error]
         if (errors.some((error) => error instanceof ReviewApiError && error.status === 401)) {
-            sessionStorage.removeItem('questlog_token')
-            queryClient.clear()
-            navigate('/login', { replace: true })
+            endSession()
         }
-    }, [communityQuery.error, libraryQuery.error, myReviewQuery.error, navigate, queryClient])
+    }, [communityQuery.error, libraryQuery.error, myReviewQuery.error, endSession])
 
     const saveMutation = useMutation({
         mutationFn: (content: string) => saveMyReview(entryId!, content),

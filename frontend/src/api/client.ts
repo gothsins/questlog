@@ -1,3 +1,4 @@
+import { getToken } from './session'
 
 import { API_URL } from './config'
 
@@ -5,7 +6,7 @@ export async function authenticatedFetch(
     path: string,
     options: RequestInit = {},
 ) {
-    const token = sessionStorage.getItem('questlog_token')
+    const token = getToken()
 
     const headers = new Headers(options.headers)
 

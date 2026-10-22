@@ -1,3 +1,4 @@
+import { setToken } from '../api/session'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
@@ -52,7 +53,7 @@ function LoginPage() {
                 localStorage.removeItem(REMEMBERED_USERNAME_KEY)
             }
 
-            sessionStorage.setItem('questlog_token', response.token)
+            setToken(response.token)
             queryClient.clear()
             const requestedPath = (location.state as { from?: string } | null)?.from
             navigate(requestedPath?.startsWith('/') && !requestedPath.startsWith('//')

@@ -1,13 +1,13 @@
 import { useEffect } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useEndSession } from '../hooks/useEndSession'
+import { NavLink } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 
 import { getMyProfile } from '../api/profile'
 import { getAvatarSrc } from '../api/profile'
 
 function AppHeader() {
-    const navigate = useNavigate()
-    const queryClient = useQueryClient()
+    const endSession = useEndSession()
 
     const {
         data: profile,
@@ -27,16 +27,12 @@ function AppHeader() {
 
     useEffect(() => {
         if (profileError?.message === 'SESSION_EXPIRED') {
-            sessionStorage.removeItem('questlog_token')
-            queryClient.clear()
-            navigate('/login', { replace: true })
+            endSession()
         }
-    }, [profileError, queryClient, navigate])
+    }, [profileError, endSession])
 
     function handleLogout() {
-        sessionStorage.removeItem('questlog_token')
-        queryClient.clear()
-        navigate('/login', { replace: true })
+        endSession()
     }
 
     return (
