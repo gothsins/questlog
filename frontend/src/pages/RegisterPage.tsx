@@ -32,6 +32,11 @@ function RegisterPage() {
             return
         }
 
+        if (!/^[A-Za-z0-9_.-]+$/.test(normalizedUsername)) {
+            setError('Use apenas letras, números, ponto, hífen e sublinhado no usuário.')
+            return
+        }
+
         const passwordError = registrationPasswordError(password)
         if (passwordError) {
             setError(passwordError)
@@ -142,7 +147,7 @@ function RegisterPage() {
                                     required
                                     aria-describedby="register-username-help"
                                 />
-                                <small id="register-username-help" className="register-v2__help">De 3 a 50 caracteres.</small>
+                                <small id="register-username-help" className="register-v2__help">De 3 a 50 caracteres: letras, números, ponto, hífen e sublinhado.</small>
                             </div>
 
                             <div className="login-v2__field">
