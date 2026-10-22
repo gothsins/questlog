@@ -1,4 +1,8 @@
 spring:
+  http:
+    client:
+      connect-timeout: 3s
+      read-timeout: 5s
   servlet:
     multipart:
       max-file-size: 2MB

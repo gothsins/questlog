@@ -35,7 +35,7 @@ public class Game {
 
     @Column(
             name = "cover_url",
-            length = 255
+            length = 500
     )
     private String coverUrl;
 }
