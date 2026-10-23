@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useEndSession } from '../hooks/useEndSession'
+import { Link, useParams } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 
 import { authenticatedFetch } from '../api/client'
 import GameDetailsContent, { GameDetailsLoading } from '../components/GameDetailsContent'
@@ -14,8 +15,7 @@ import '../styles/game-details.css'
 
 function GameDetailsPage() {
     const { gameId } = useParams()
-    const navigate = useNavigate()
-    const queryClient = useQueryClient()
+    const endSession = useEndSession()
     const id = Number(gameId)
     const validId = Number.isSafeInteger(id) && id > 0
 
@@ -97,17 +97,8 @@ function GameDetailsPage() {
             writtenQuery.error,
         ].some((error) => error?.message === 'SESSION_EXPIRED')
         if (!expired) return
-        sessionStorage.removeItem('questlog_token')
-        queryClient.clear()
-        navigate('/login', { replace: true })
-    }, [
-        gameQuery.error,
-        mediaQuery.error,
-        steamQuery.error,
-        writtenQuery.error,
-        navigate,
-        queryClient,
-    ])
+        endSession()
+    }, [gameQuery.error, mediaQuery.error, steamQuery.error, writtenQuery.error, endSession])
 
     if (!validId) {
         return (

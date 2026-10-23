@@ -1,7 +1,8 @@
 
 import { useEffect, useState } from 'react'
+import { useEndSession } from '../hooks/useEndSession'
 import type { FormEvent } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import {
     useMutation,
     useQuery,
@@ -9,6 +10,7 @@ import {
 } from '@tanstack/react-query'
 
 import { authenticatedFetch } from '../api/client'
+import { importIgdbGame, useLibraryQuery } from '../api/library'
 import SearchGameCard from '../components/SearchGameCard'
 import type { IgdbSearchResult } from '../types/igdb'
 import type { LibraryEntry } from '../types/library'
@@ -16,7 +18,7 @@ import type { LibraryEntry } from '../types/library'
 import '../styles/explore.css'
 
 function ExplorePage() {
-    const navigate = useNavigate()
+    const endSession = useEndSession()
     const [searchParams] = useSearchParams()
     const initialSearch = (searchParams.get('q') ?? '').trim().slice(0, 80)
     const queryClient = useQueryClient()
@@ -60,25 +62,7 @@ function ExplorePage() {
         isPending: libraryPending,
         isError: libraryHasError,
         error: libraryError,
-    } = useQuery<LibraryEntry[]>({
-        queryKey: ['library'],
-        staleTime: 30_000,
-        retry: false,
-
-        queryFn: async () => {
-            const response = await authenticatedFetch('/api/library')
-
-            if (response.status === 401 || response.status === 403) {
-                throw new Error('SESSION_EXPIRED')
-            }
-
-            if (!response.ok) {
-                throw new Error('Falha ao carregar biblioteca')
-            }
-
-            return (await response.json()) as LibraryEntry[]
-        },
-    })
+    } = useLibraryQuery()
 
     useEffect(() => {
         const sessionExpired = [searchError, libraryError].some(
@@ -88,40 +72,16 @@ function ExplorePage() {
         )
 
         if (sessionExpired) {
-            sessionStorage.removeItem('questlog_token')
-            queryClient.clear()
-            navigate('/login', { replace: true })
+            endSession()
         }
-    }, [searchError, libraryError, navigate, queryClient])
+    }, [searchError, libraryError, endSession])
 
     const {
         mutate: addGame,
         isPending: isAdding,
         variables: addingId,
     } = useMutation<LibraryEntry, Error, number>({
-        mutationFn: async (igdbId) => {
-            const response = await authenticatedFetch(
-                '/api/library/import',
-                {
-                    method: 'POST',
-                    body: JSON.stringify({ igdbId }),
-                },
-            )
-
-            if (response.status === 401 || response.status === 403) {
-                throw new Error('SESSION_EXPIRED')
-            }
-
-            if (response.status === 409) {
-                throw new Error('ALREADY_IN_LIBRARY')
-            }
-
-            if (!response.ok) {
-                throw new Error('IMPORT_FAILED')
-            }
-
-            return (await response.json()) as LibraryEntry
-        },
+        mutationFn: importIgdbGame,
 
         onMutate: () => {
             setFeedback('')
@@ -154,9 +114,7 @@ function ExplorePage() {
 
         onError: (error, igdbId) => {
             if (error.message === 'SESSION_EXPIRED') {
-                sessionStorage.removeItem('questlog_token')
-                queryClient.clear()
-                navigate('/login', { replace: true })
+                endSession()
                 return
             }
 

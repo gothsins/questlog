@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -85,7 +86,7 @@ public class GameController {
     )
     @GetMapping("/search")
     public ResponseEntity<List<IgdbSearchResult>> searchGames(
-            @RequestParam String query
+            @RequestParam @Size(max = 80) String query
     ) {
 
         return ResponseEntity.ok(

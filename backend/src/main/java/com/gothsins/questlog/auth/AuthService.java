@@ -11,6 +11,7 @@ import com.gothsins.questlog.user.dto.UserResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,7 +32,7 @@ public class AuthService {
 
         passwordPolicy.validate(request.password());
 
-        if (userRepository.existsByUsername(request.username())) {
+        if (userRepository.existsByUsernameIgnoreCase(request.username())) {
             throw new UsernameAlreadyExistsException(
                     "Username already exists"
             );
@@ -60,15 +61,18 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
 
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.username(),
-                        request.password()
-                )
-        );
+        Authentication authentication =
+                authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(
+                                request.username(),
+                                request.password()
+                        )
+                );
 
+        // Login is case-insensitive, but the token must carry the canonical
+        // username stored in the database, never what the client typed.
         String token =
-                jwtService.generateToken(request.username());
+                jwtService.generateToken(authentication.getName());
 
         return new AuthResponse(token);
     }

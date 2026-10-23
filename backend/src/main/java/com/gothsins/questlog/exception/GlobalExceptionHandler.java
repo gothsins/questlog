@@ -10,7 +10,9 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.beans.TypeMismatchException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
@@ -163,10 +165,37 @@ public class GlobalExceptionHandler {
                 .body(error);
     }
 
+    @ExceptionHandler({
+            HttpMessageNotReadableException.class,
+            TypeMismatchException.class
+    })
+    public ResponseEntity<ErrorResponse> handleMalformedRequest(
+            Exception exception
+    ) {
+        return ResponseEntity
+                .badRequest()
+                .body(new ErrorResponse(
+                        "Malformed request",
+                        HttpStatus.BAD_REQUEST.value()
+                ));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUnexpectedException(
             Exception exception
     ) {
+        // Spring's own request exceptions (missing parameter, unsupported
+        // media type, unknown resource, method validation...) already carry
+        // the right 4xx status. Without this branch the catch-all below would
+        // turn every one of them into a 500.
+        if (exception instanceof org.springframework.web.ErrorResponse framework
+                && framework.getStatusCode().is4xxClientError()) {
+            int status = framework.getStatusCode().value();
+            return ResponseEntity
+                    .status(status)
+                    .headers(framework.getHeaders())
+                    .body(new ErrorResponse(clientErrorMessage(status), status));
+        }
 
         log.error(
                 "Unexpected application error",
@@ -229,5 +258,14 @@ public class GlobalExceptionHandler {
                         "Image upload exceeds the allowed size",
                         413
                 ));
+    }
+
+    private String clientErrorMessage(int status) {
+        return switch (status) {
+            case 404 -> "Resource not found";
+            case 406 -> "Not acceptable";
+            case 415 -> "Unsupported media type";
+            default -> "Invalid request";
+        };
     }
 }

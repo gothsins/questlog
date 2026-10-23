@@ -1,9 +1,15 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEndSession } from '../hooks/useEndSession'
 import { useQueryClient } from '@tanstack/react-query'
 import { useReducedMotion } from 'motion/react'
 
-import { authenticatedFetch } from '../api/client'
+import {
+    LIBRARY_QUERY_KEY,
+    type LibraryEntryChanges,
+    SESSION_EXPIRED,
+    patchLibraryEntry,
+    useLibraryQuery,
+} from '../api/library'
 import { syncReviewRating } from '../components/reviewCache'
 import type { LibraryEntry } from '../types/library'
 import type { GameReview } from '../types/reviews'
@@ -14,20 +20,20 @@ import { readLibraryViewMode, saveLibraryViewMode } from '../components/libraryV
 
 import '../styles/library.css'
 
-type LibraryEntryChanges = {
-    status?: LibraryEntry['status']
-    rating?: number
-    hoursPlayed?: number
-}
+const NO_GAMES: LibraryEntry[] = []
 
 function LibraryPage() {
-    const navigate = useNavigate()
+    const endSession = useEndSession()
     const queryClient = useQueryClient()
     const reducedMotion = Boolean(useReducedMotion())
 
-    const [games, setGames] = useState<LibraryEntry[]>([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState('')
+    const libraryQuery = useLibraryQuery({ staleTime: 0 })
+    const games = libraryQuery.data ?? NO_GAMES
+    const loading = libraryQuery.isPending
+    const error =
+        libraryQuery.isError && libraryQuery.error.message !== SESSION_EXPIRED
+            ? 'Não foi possível carregar sua biblioteca'
+            : ''
     const [saveError, setSaveError] = useState('')
     const [saveNotice, setSaveNotice] = useState('')
 
@@ -46,35 +52,8 @@ function LibraryPage() {
     useEffect(() => saveLibraryViewMode(viewMode), [viewMode])
 
     useEffect(() => {
-        async function loadLibrary() {
-            try {
-                const response = await authenticatedFetch('/api/library')
-
-                if (response.status === 401 || response.status === 403) {
-                    sessionStorage.removeItem('questlog_token')
-                    queryClient.clear()
-                    navigate('/login', { replace: true })
-                    return
-                }
-
-                if (!response.ok) {
-                    throw new Error('Não foi possível carregar sua biblioteca')
-                }
-
-                const data: LibraryEntry[] = await response.json()
-                setGames(data)
-                queryClient.setQueryData<LibraryEntry[]>(['library'], data)
-            } catch (error) {
-                setError(
-                    error instanceof Error ? error.message : 'Erro inesperado',
-                )
-            } finally {
-                setLoading(false)
-            }
-        }
-
-        void loadLibrary()
-    }, [navigate, queryClient])
+        if (libraryQuery.error?.message === SESSION_EXPIRED) endSession()
+    }, [libraryQuery.error, endSession])
 
     async function updateLibraryEntry(
         entryId: number,
@@ -87,35 +66,10 @@ function LibraryPage() {
         setSaveNotice('')
 
         try {
-            const response = await authenticatedFetch(
-                `/api/library/${entryId}`,
-                {
-                    method: 'PATCH',
-                    body: JSON.stringify(changes),
-                },
-            )
-
-            if (response.status === 401 || response.status === 403) {
-                sessionStorage.removeItem('questlog_token')
-                queryClient.clear()
-                navigate('/login', { replace: true })
-                return false
-            }
-
-            if (!response.ok) {
-                throw new Error('Não foi possível atualizar o jogo.')
-            }
-
-            const updated = (await response.json()) as LibraryEntry
-
-            setGames((current) =>
-                current.map((game) =>
-                    game.id === updated.id ? updated : game,
-                ),
-            )
+            const updated = await patchLibraryEntry(entryId, changes)
 
             queryClient.setQueryData<LibraryEntry[]>(
-                ['library'],
+                LIBRARY_QUERY_KEY,
                 (current) =>
                     current
                         ? current.map((game) =>
@@ -141,7 +95,11 @@ function LibraryPage() {
             }
 
             return true
-        } catch {
+        } catch (error) {
+            if (error instanceof Error && error.message === SESSION_EXPIRED) {
+                endSession()
+                return false
+            }
             setSaveError(
                 'Não foi possível salvar a alteração. Tente novamente.',
             )

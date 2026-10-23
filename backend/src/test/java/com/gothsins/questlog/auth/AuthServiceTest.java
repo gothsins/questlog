@@ -56,7 +56,7 @@ class AuthServiceTest {
 
         String encodedPassword = "$2a$10$fakeEncodedPassword";
 
-        when(userRepository.existsByUsername(request.username()))
+        when(userRepository.existsByUsernameIgnoreCase(request.username()))
                 .thenReturn(false);
 
         when(passwordEncoder.encode(request.password()))
@@ -105,7 +105,7 @@ class AuthServiceTest {
         RegisterRequest request =
                 new RegisterRequest("gui", "minhaSenha123");
 
-        when(userRepository.existsByUsername(request.username()))
+        when(userRepository.existsByUsernameIgnoreCase(request.username()))
                 .thenReturn(true);
 
         UsernameAlreadyExistsException exception =
@@ -120,7 +120,7 @@ class AuthServiceTest {
         );
 
         verify(userRepository)
-                .existsByUsername(request.username());
+                .existsByUsernameIgnoreCase(request.username());
 
         verifyNoInteractions(passwordEncoder);
 
@@ -189,6 +189,28 @@ class AuthServiceTest {
         verify(jwtService)
                 .generateToken(request.username());
         verifyNoInteractions(passwordPolicy, pwnedPasswordService);
+    }
+
+    @Test
+    void shouldIssueTokenForCanonicalUsernameNotForWhatWasTyped() {
+
+        LoginRequest request =
+                new LoginRequest("GUI", "minhaSenha123");
+
+        when(authenticationManager.authenticate(
+                any(UsernamePasswordAuthenticationToken.class)
+        )).thenReturn(
+                new UsernamePasswordAuthenticationToken("Gui", null)
+        );
+
+        when(jwtService.generateToken("Gui"))
+                .thenReturn("canonical.jwt.token");
+
+        AuthResponse response = authService.login(request);
+
+        assertEquals("canonical.jwt.token", response.token());
+        verify(jwtService).generateToken("Gui");
+        verify(jwtService, never()).generateToken("GUI");
     }
 
     @Test

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useEndSession } from '../hooks/useEndSession'
 import type { ChangeEvent, FormEvent } from 'react'
 
 import {
@@ -7,7 +8,7 @@ import {
     useQueryClient,
 } from '@tanstack/react-query'
 
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 import {
     getAvatarSrc,
@@ -22,7 +23,7 @@ import '../styles/profile.css'
 
 function ProfilePage() {
     const queryClient = useQueryClient()
-    const navigate = useNavigate()
+    const endSession = useEndSession()
 
     const [nicknameDraft, setNicknameDraft] = useState<string | null>(null)
     const [success, setSuccess] = useState('')
@@ -48,11 +49,9 @@ function ProfilePage() {
 
     useEffect(() => {
         if (error instanceof Error && error.message === 'SESSION_EXPIRED') {
-            sessionStorage.removeItem('questlog_token')
-            queryClient.clear()
-            navigate('/login', { replace: true })
+            endSession()
         }
-    }, [error, navigate, queryClient])
+    }, [error, endSession])
 
     const updateMutation = useMutation({
         mutationFn: updateMyProfile,
@@ -69,18 +68,14 @@ function ProfilePage() {
 
         onError: (error) => {
             if (error.message === 'SESSION_EXPIRED') {
-                sessionStorage.removeItem('questlog_token')
-                queryClient.clear()
-                navigate('/login', { replace: true })
+                endSession()
             }
         },
     })
 
     function handleAvatarError(error: Error) {
         if (error.message === 'SESSION_EXPIRED') {
-            sessionStorage.removeItem('questlog_token')
-            queryClient.clear()
-            navigate('/login', { replace: true })
+            endSession()
             return
         }
 

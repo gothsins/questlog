@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useEndSession } from '../hooks/useEndSession'
+import { importIgdbGame, useLibraryQuery } from '../api/library'
+import { Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { authenticatedFetch } from '../api/client'
 import type { DiscoveryGame, DiscoverySection, HomeDiscovery } from '../types/discovery'
@@ -191,7 +193,7 @@ function Journey({ library, playing }: {
 }
 
 function HomePage() {
-    const navigate = useNavigate()
+    const endSession = useEndSession()
     const queryClient = useQueryClient()
     const [feedback, setFeedback] = useState<{ kind: 'success' | 'error'; message: string } | null>(null)
     const discovery = useQuery({
@@ -200,23 +202,9 @@ function HomePage() {
         staleTime: 5 * 60_000,
         retry: false,
     })
-    const library = useQuery({
-        queryKey: ['library'],
-        queryFn: ({ signal }) => readJson<LibraryEntry[]>('/api/library', signal),
-        staleTime: 30_000,
-        retry: false,
-    })
+    const library = useLibraryQuery()
     const importGame = useMutation<LibraryEntry, Error, DiscoveryGame>({
-        mutationFn: async (game) => {
-            const response = await authenticatedFetch('/api/library/import', {
-                method: 'POST',
-                body: JSON.stringify({ igdbId: game.igdbId }),
-            })
-            if (response.status === 401 || response.status === 403) throw new Error('SESSION_EXPIRED')
-            if (response.status === 409) throw new Error('ALREADY_IN_LIBRARY')
-            if (!response.ok) throw new Error('IMPORT_FAILED')
-            return response.json() as Promise<LibraryEntry>
-        },
+        mutationFn: (game) => importIgdbGame(game.igdbId),
         onMutate: () => setFeedback(null),
         onSuccess: (entry) => {
             queryClient.setQueryData<LibraryEntry[]>(['library'], current => {
@@ -246,11 +234,9 @@ function HomePage() {
     useEffect(() => {
         if ([discovery.error, library.error, importGame.error]
             .some(error => error instanceof Error && error.message === 'SESSION_EXPIRED')) {
-            sessionStorage.removeItem('questlog_token')
-            queryClient.clear()
-            navigate('/login', { replace: true })
+            endSession()
         }
-    }, [discovery.error, library.error, importGame.error, navigate, queryClient])
+    }, [discovery.error, library.error, importGame.error, endSession])
 
     const featured = discovery.data?.featured
     const playing = library.data?.filter(game => game.status === 'PLAYING') ?? []

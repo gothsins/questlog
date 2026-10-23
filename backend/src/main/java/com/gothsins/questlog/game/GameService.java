@@ -1,11 +1,8 @@
 package com.gothsins.questlog.game;
 
 import com.gothsins.questlog.exception.ResourceNotFoundException;
-import com.gothsins.questlog.game.dto.CreateGameRequest;
 import com.gothsins.questlog.game.dto.GameResponse;
-import com.gothsins.questlog.metrics.QuestlogMetrics;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,27 +14,6 @@ import java.util.List;
 public class GameService {
 
     private final GameRepository gameRepository;
-    private final QuestlogMetrics questlogMetrics;
-
-    @CacheEvict(
-            value = "gamesList",
-            allEntries = true
-    )
-    @Transactional
-    public GameResponse create(CreateGameRequest request) {
-
-        Game game = new Game();
-
-        game.setTitle(request.title());
-        game.setReleaseDate(request.releaseDate());
-        game.setCoverUrl(request.coverUrl());
-
-        Game savedGame = gameRepository.save(game);
-
-        questlogMetrics.incrementGamesCreated();
-
-        return toResponse(savedGame);
-    }
 
     private GameResponse toResponse(Game game) {
 
