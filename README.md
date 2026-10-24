@@ -41,6 +41,18 @@ frontend/   React + TypeScript app (pages, components, api, hooks, styles, e2e)
 docs/       Feature notes, security audit, screenshots
 ```
 
+## Security headers (CSP)
+
+The production build is served by `npm run preview` with a strict Content-Security-Policy (`frontend/csp.ts`): scripts, styles and fonts only from the app itself, images from the API and the IGDB CDN, and YouTube only through its privacy-enhanced embed.
+
+It starts in **report-only** mode, so the browser logs what it *would* block without breaking the page:
+
+```bash
+cd frontend
+npm run build && npm run preview     # check the browser console for "[Report Only]" messages
+CSP_ENFORCE=true npm run preview     # enforce the policy once the console is clean
+```
+
 ## Running locally
 
 Requirements: Java 21, Docker, Node.js and npm.
