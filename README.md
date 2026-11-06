@@ -98,4 +98,4 @@ cd frontend && npm run test:e2e           # Playwright end-to-end
 
 ## API documentation
 
-With the backend running, Swagger UI is available at `http://localhost:8080/swagger-ui.html`.
+Swagger UI is off by default; start the backend with SWAGGER_ENABLED=true to use it at /swagger-ui.html.
